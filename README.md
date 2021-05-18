@@ -28,10 +28,3 @@ Keep an eye on **enemies spawning in**, they will charge at you **blazing fast**
 **Don't let your tether go wack**! If you move it around too much, it becomes **uncontrollable** and you have an awful time dealing with *Eyes*.
 
 Instead of charging a *Twitchy* head on, wait for it to **run out of fuel** and then destroy it.
-
-## Leaderboard
-Here are the top three scores! Comment below with a picture of your highest score to be added to the leaderboard (and keep in mind this is a small community game, don't bother cheating).
-
-1. @RayhanADev (19)
-2. 
-3. 
