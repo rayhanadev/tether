@@ -1,25 +1,30 @@
 document.body.classList.add('game');
 
 var DEBUG = (window.location.hash === '#DEBUG'),
-	INFO = (DEBUG || window.location.hash === '#INFO'),
-	game,
-	music,
-	canvas,
-	ctx,
-	devicePixelRatio = window.devicePixelRatio || 1,
+  INFO = (DEBUG || window.location.hash === '#INFO'),
+  game,
+  music,
+  canvas,
+  ctx,
+  devicePixelRatio = window.devicePixelRatio || 1,
   width = window.innerWidth,
   height = window.innerHeight,
-	muteButtonPosition,
-	muteButtonProximityThreshold = 30,
-	maximumPossibleDistanceBetweenTwoMasses,
-	highScoreCookieKey = 'tetherHighScore',
-	highScore = localStorage.getItem(highScoreCookieKey),
-	musicMutedCookieKey = 'tetherMusicMuted',
-	lastTouchStart,
-	uidCookieKey = 'tetherId',
-	uid,
-	shouldUnmuteImmediately = false,
-	cookieExpiryDate = new Date();
+  muteButtonPosition,
+  muteButtonProximityThreshold = 30,
+  maximumPossibleDistanceBetweenTwoMasses,
+  highScoreCookieKey = 'tetherHighScore',
+  highScore = localStorage.getItem(highScoreCookieKey) ?? 0,
+  musicMutedCookieKey = 'tetherMusicMuted',
+  lastDayCookieKey = 'tetherLastDate',
+  colorsUnlockKey = 'tetherColorsUnlock',
+  streakCountCookieKey = 'tetherStreakCount',
+  streakCount = localStorage.getItem(streakCountCookieKey) ?? 0,
+  lastTouchStart,
+  uidCookieKey = 'tetherId',
+  uid,
+  playerRGB = [20, 20, 200],
+  shouldUnmuteImmediately = false,
+  cookieExpiryDate = new Date();
 
 cookieExpiryDate.setFullYear(cookieExpiryDate.getFullYear() + 50);
 var cookieSuffix = '; expires=' + cookieExpiryDate.toUTCString();
@@ -335,6 +340,58 @@ var achievements = {
 };
 
 function initCanvas() {
+	var lastDate = Number(localStorage.getItem(lastDayCookieKey));
+	var later24Hours = Number(lastDate) + 86400000;
+	var later48Hours = Number(lastDate) + (2 * 86400000);	
+	var currentDate = new Date();
+
+  var streak = Number(localStorage.getItem(streakCountCookieKey));
+
+	if(!lastDate || Number.isNaN(lastDate)) {
+		saveCookie(lastDayCookieKey, currentDate.getTime());
+		saveCookie(streakCountCookieKey, 0);
+	} else if(later48Hours > Number(Date.now()) > later24Hours) {
+		saveCookie(streakCountCookieKey, streak += 1);
+		saveCookie(lastDayCookieKey, currentDate.getTime());
+	} else if (Number(Date.now()) < later24Hours) {
+	} else {
+		saveCookie(streakCountCookieKey, 0);
+	}
+
+	switch(streak) {
+		case 0:
+			console.log('Streak 0');
+			break;
+		case 1:
+			playerRGB = [206, 125, 165];
+			break;
+		case 2:
+			playerRGB = [50, 147, 165];
+			break;
+		case 3:
+			playerRGB = [223, 41, 53];
+			break;
+		case 4:
+			playerRGB = [223, 41, 53];
+			break;
+		case 5:
+			playerRGB = [39, 38, 53];
+			break;
+		case 6:
+			playerRGB = [255, 231, 76];
+			break;
+		case 7:
+		case 8:
+		case 9:
+			playerRGB = [15, 14, 14];
+			break;
+		default:
+		case 10:
+			playerRGB = [223, 41, 53];
+			console.log('Congrats on your 10 day streak!!');
+			break;
+	}
+
   width = window.innerWidth;
   height = window.innerHeight;
   muteButtonPosition = {x: 32, y: height-28};
@@ -359,6 +416,25 @@ function initCanvas() {
 
   scaleCanvas(devicePixelRatio);
 }
+
+window.addEventListener('resize', function(event) {
+	canvas = document.getElementById('game');
+
+	width = window.innerWidth;
+	height = window.innerHeight;
+	devicePixelRatio = window.devicePixelRatio || 1;
+
+  canvas.style.width = width + 'px';
+  canvas.style.height = height + 'px';
+
+	if(!game.started) {
+		game.tether.teleportTo({
+	    x: width / 2,
+	    y: (height / 3) * 2
+		});
+	}
+	scaleCanvas(devicePixelRatio);
+});
 
 function edgesOfCanvas() {
   return linesFromPolygon([
@@ -395,6 +471,7 @@ function Music() {
 
   if (shouldUnmuteImmediately) self.element.play();
 }
+
 Music.prototype = {
   bpm: 90,
   url: 'bgm.mp3',
@@ -420,6 +497,7 @@ Music.prototype = {
 function Mass() {
   this.seed = Math.random();
 }
+
 Mass.prototype = {
   position: {x: 0, y: 0},
   positionOnPreviousFrame: {x: 0, y: 0},
@@ -579,9 +657,11 @@ function BackgroundPart(i) {
   this.walls = true;
 }
 extend(Mass, BackgroundPart);
+
 BackgroundPart.prototype.getCurrentColor = function() {
   return this.color;
 };
+
 BackgroundPart.prototype.step = function() {
   this.color = rgbWithOpacity([127,127,127], 0.005 * this.i);
 
@@ -603,6 +683,7 @@ function Background() {
     this.parts.push(new BackgroundPart(i));
   }
 }
+
 Background.prototype.draw = function() {
   if (game.clickShouldMute && music.element.paused) {
     draw({
@@ -614,6 +695,7 @@ Background.prototype.draw = function() {
 
   for (var i = 0; i < this.parts.length; this.parts[i++].draw());
 };
+
 Background.prototype.step = function() {
   for (var i = 0; i < this.parts.length; this.parts[i++].step());
 };
@@ -624,7 +706,7 @@ function Tether() {
 
   this.locked = true;
   this.unlockable = true;
-  this.rgb = [20,20,200];
+  this.rgb = playerRGB ?? [20,20,200];
 
   this.teleportTo({
     x: width / 2,
@@ -717,7 +799,7 @@ function Player(tether) {
   this.bounciness = 0.4;
 
   this.tether = tether;
-  this.rgb = [20,20,200];
+  this.rgb = playerRGB ?? [20,20,200];
 }
 extend(Mass, Player);
 
@@ -746,7 +828,7 @@ function Cable(tether, player) {
     draw({
       type: 'line',
       stroke: true,
-      strokeStyle: 'rgba(20, 20, 200, 1)',
+      strokeStyle: `rgba(${playerRGB[0] ?? 20}, ${playerRGB[1] ?? 20}, ${playerRGB[2] ?? 200}, 1)`,
       linePaths: [self.line()]
     });
 
@@ -1771,15 +1853,26 @@ function Game() {
       if (highScore) {
         draw({
           type: 'text',
-          text: 'Best: ' + highScore.toString(),
+          text: 'Best Score: ' + highScore.toString(),
           fillStyle: fillStyle = rgbWithOpacity([0,0,0], hintOpacity),
           fontSize: 16,
-          textPosition: {x: width-6, y: height-20},
+          textPosition: {x: width-6, y: height-38},
           textAlign: 'right',
           textBaseline: 'bottom',
           fontFamily: 'Quantico'
         });
       }
+      
+      draw({
+        type: 'text',
+        text: 'Login Streak: ' + streakCount.toString(),
+        fillStyle: fillStyle = rgbWithOpacity([0,0,0], hintOpacity),
+        fontSize: 16,
+        textPosition: {x: width-6, y: height-20},
+        textAlign: 'right',
+        textBaseline: 'bottom',
+        fontFamily: 'Quantico'
+      });
 
       draw({
         type: 'rect',
