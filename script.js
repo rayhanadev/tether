@@ -19,6 +19,7 @@ var DEBUG = (window.location.hash === '#DEBUG'),
   colorsUnlockKey = 'tetherColorsUnlock',
   streakCountCookieKey = 'tetherStreakCount',
   streakCount = localStorage.getItem(streakCountCookieKey) ?? 0,
+	lastDate = new Date(Number(localStorage.getItem(lastDayCookieKey))),
   lastTouchStart,
   uidCookieKey = 'tetherId',
   uid,
@@ -340,14 +341,16 @@ var achievements = {
 };
 
 function initCanvas() {
-	var lastDate = Number(localStorage.getItem(lastDayCookieKey));
-	var later24Hours = Number(lastDate) + 86400000;
-	var later48Hours = Number(lastDate) + (2 * 86400000);	
+	var later24Hours = lastDate.getTime() + 86400000;
+	var later48Hours = lastDate.getTime() + (2 * 86400000);	
 	var currentDate = new Date();
 
+	console.log(later24Hours);
+	console.log(currentDate.getTime());
+	console.log(later48Hours);
   var streak = Number(localStorage.getItem(streakCountCookieKey));
 
-	if(!lastDate || Number.isNaN(lastDate)) {
+	if(!Number(localStorage.getItem(lastDayCookieKey)) || Number.isNaN(lastDate)) {
 		saveCookie(lastDayCookieKey, currentDate.getTime());
 		saveCookie(streakCountCookieKey, 0);
 	} else if(later48Hours > Number(Date.now()) > later24Hours) {
@@ -435,6 +438,14 @@ window.addEventListener('resize', function(event) {
 	}
 	scaleCanvas(devicePixelRatio);
 });
+
+function timeToNextClaim() {
+	var deadline = lastDate.getTime() + 86400000;
+	var timeRemaining = deadline - new Date();
+	var formattedTime = new Date(timeRemaining);
+
+	return `${formattedTime.getHours()}:${formattedTime.getMinutes()}:${formattedTime.getSeconds()}`
+}
 
 function edgesOfCanvas() {
   return linesFromPolygon([
@@ -1856,7 +1867,7 @@ function Game() {
           text: 'Best Score: ' + highScore.toString(),
           fillStyle: fillStyle = rgbWithOpacity([0,0,0], hintOpacity),
           fontSize: 16,
-          textPosition: {x: width-6, y: height-38},
+          textPosition: {x: width-6, y: height-56},
           textAlign: 'right',
           textBaseline: 'bottom',
           fontFamily: 'Quantico'
@@ -1866,6 +1877,17 @@ function Game() {
       draw({
         type: 'text',
         text: 'Login Streak: ' + streakCount.toString(),
+        fillStyle: fillStyle = rgbWithOpacity([0,0,0], hintOpacity),
+        fontSize: 16,
+        textPosition: {x: width-6, y: height-38},
+        textAlign: 'right',
+        textBaseline: 'bottom',
+        fontFamily: 'Quantico'
+      });
+      
+      draw({
+        type: 'text',
+        text: 'Next Day: ' + timeToNextClaim(),
         fillStyle: fillStyle = rgbWithOpacity([0,0,0], hintOpacity),
         fontSize: 16,
         textPosition: {x: width-6, y: height-20},
