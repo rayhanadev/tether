@@ -805,7 +805,6 @@ function Tether() {
 
 	document.addEventListener('touchend', function (e) {
 		self.locked = true;
-		game.lastMousePosition = {x: NaN, y: NaN};
 	});
 
 	function exitTether() {
@@ -2245,8 +2244,8 @@ document.addEventListener('click', handleClick);
 
 canvas.addEventListener('mousemove', function (e) {
 	if (document.pointerLockElement === canvas) {
-		console.log(game.tether)
 		if (game.tether.locked) game.tether.locked = false;
+		
 		game.lastMousePosition.x += e.movementX;
 		game.lastMousePosition.y += e.movementY;
 
