@@ -853,6 +853,7 @@ Tether.prototype.step = function () {
 	) {
 		canvas.requestPointerLock();
 		if (!(this.lastInteraction !== 'mouse' || document.pointerLockElement === canvas)) return;
+		
 		this.locked = false;
 
 		if (!game.started) {
@@ -2242,18 +2243,19 @@ function handleClick(e) {
 
 document.addEventListener('click', handleClick);
 
-	canvas.addEventListener('mousemove', function (e) {
-		if (document.pointerLockElement === canvas) {
-			game.lastMousePosition.x += e.movementX;
-			game.lastMousePosition.y += e.movementY;
+canvas.addEventListener('mousemove', function (e) {
+	if (document.pointerLockElement === canvas) {
+		if (game.tether.locked) game.tether.locked = false;
+		game.lastMousePosition.x += e.movementX;
+		game.lastMousePosition.y += e.movementY;
 
-			if (game.lastMousePosition.x < 0) game.lastMousePosition.x = 0;
-			else if (game.lastMousePosition.x > width) game.lastMousePosition.x = width;
+		if (game.lastMousePosition.x < 0) game.lastMousePosition.x = 0;
+		else if (game.lastMousePosition.x > width) game.lastMousePosition.x = width;
 
-			if (game.lastMousePosition.y < 0) game.lastMousePosition.y = 0;
-			else if (game.lastMousePosition.y > height) game.lastMousePosition.y = height;
-		}
-	});
+		if (game.lastMousePosition.y < 0) game.lastMousePosition.y = 0;
+		else if (game.lastMousePosition.y > height) game.lastMousePosition.y = height;
+	}
+});
 
 document.addEventListener('touchstart', function (e) {
 	lastTouchStart = new Date().getTime();
