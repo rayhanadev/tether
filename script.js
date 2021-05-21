@@ -828,7 +828,7 @@ function Tether() {
 	}
 
 	document.addEventListener('touchstart', handleTouch);
-	document.addEventListener('touchmove', handleTouch, {passive: false);
+	document.addEventListener('touchmove', handleTouch, {passive: false});
 
 	return this;
 }
