@@ -23,7 +23,6 @@ var DEBUG = window.location.hash === '#DEBUG',
 	uidCookieKey = 'tetherId',
 	uid,
 	playerRGB = [20, 20, 200],
-	hslVal = 0,
 	shouldUnmuteImmediately = false,
 	cookieExpiryDate = new Date();
 
@@ -181,7 +180,7 @@ function pointInPolygon(point, polygon) {
 
 function vectorMagnitude(vector) {
 	return Math.abs(
-		Math.pow(Math.pow(vector.x, 2) + Math.pow(vector.y, 2), 1 / 2)
+		Math.pow(Math.pow(vector.x, 2) + Math.pow(vector.y, 2), 1 / 2),
 	);
 }
 
@@ -227,10 +226,6 @@ function rgbWithOpacity(rgb, opacity) {
 	var rgbStrings = [];
 	for (var i = 0; i < rgb.length; rgbStrings.push(rgb[i++].toFixed(0)));
 	return 'rgba(' + rgbStrings.join(',') + ',' + opacity.toFixed(2) + ')';
-}
-
-function hsl(hsl) {
-	return 'hsl(' + hsl + ', 100%, 50%)';
 }
 
 function draw(opts) {
@@ -294,7 +289,7 @@ draw.arc = function (opts) {
 		opts.arcCenter.y,
 		opts.arcRadius,
 		opts.arcStart,
-		opts.arcFinish
+		opts.arcFinish,
 	);
 };
 
@@ -396,16 +391,12 @@ function initCanvas() {
 	) {
 		saveCookie(lastDayCookieKey, currentDate.getTime());
 		saveCookie(streakCountCookieKey, 0);
-	} else if (
-		later48Hours > Number(new Date()) &&
-		Number(new Date()) > later24Hours
-	) {
+	} else if (later48Hours > Number(Date.now()) > later24Hours) {
 		saveCookie(streakCountCookieKey, (streak += 1));
 		saveCookie(lastDayCookieKey, currentDate.getTime());
-	} else if (Number(new Date()) < later24Hours) {
+	} else if (Number(Date.now()) < later24Hours) {
 	} else {
 		saveCookie(streakCountCookieKey, 0);
-		saveCookie(lastDayCookieKey, currentDate.getTime());
 	}
 
 	switch (streak) {
@@ -436,7 +427,7 @@ function initCanvas() {
 			break;
 		default:
 		case 10:
-			playerRGB = 'Rainbow';
+			playerRGB = [223, 41, 53];
 			console.log('Congrats on your 10 day streak!!');
 			break;
 	}
@@ -456,8 +447,10 @@ function initCanvas() {
 	canvas.style.width = width.toString() + 'px';
 	canvas.style.height = height.toString() + 'px';
 
-	canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
-	document.exitPointerLock = document.exitPointerLock || document.mozExitPointerLock;
+	canvas.requestPointerLock =
+		canvas.requestPointerLock || canvas.mozRequestPointerLock;
+	document.exitPointerLock =
+		document.exitPointerLock || document.mozExitPointerLock;
 
 	for (var key in localStorage) {
 		var value = localStorage.getItem(key);
@@ -505,17 +498,13 @@ function timeToNextClaim() {
 	var timeRemaining = deadline - new Date();
 	var formattedTime = new Date(timeRemaining);
 
-	if (formattedTime > 0) {
-		return `${
-			formattedTime.getHours() > 9 ? '' : '0'
-		}${formattedTime.getHours()}:${
-			formattedTime.getMinutes() > 9 ? '' : '0'
-		}${formattedTime.getMinutes()}:${
-			formattedTime.getSeconds() > 9 ? '' : '0'
-		}${formattedTime.getSeconds()}`;
-	} else {
-		return 'Right Now!';
-	}
+	return `${
+		formattedTime.getHours() > 9 ? '' : '0'
+	}${formattedTime.getHours()}:${
+		formattedTime.getMinutes() > 9 ? '' : '0'
+	}${formattedTime.getMinutes()}:${
+		formattedTime.getSeconds() > 9 ? '' : '0'
+	}${formattedTime.getSeconds()}`;
 }
 
 function edgesOfCanvas() {
@@ -634,7 +623,7 @@ Mass.prototype = {
 
 	reactToVelocity: function () {
 		this.setPosition(
-			forXAndY([this.position, this.velocity], forXAndY.aPlusBTimesSpeed)
+			forXAndY([this.position, this.velocity], forXAndY.aPlusBTimesSpeed),
 		);
 		this.collideWithWalls();
 	},
@@ -650,7 +639,7 @@ Mass.prototype = {
 		var self = this;
 		var projectedVelocity = forXAndY(
 			[this.velocity, this.velocityDelta()],
-			forXAndY.aPlusBTimesSpeed
+			forXAndY.aPlusBTimesSpeed,
 		);
 
 		this.velocity = forXAndY([projectedVelocity], function (projected) {
@@ -672,13 +661,7 @@ Mass.prototype = {
 	},
 
 	getCurrentColor: function () {
-		if (this.rgb === 'Rainbow') {
-			if (hslVal !== 360) hslVal++;
-			else hslVal = 0;
-		}
-		return this.rgb === 'Rainbow'
-			? hsl(hslVal)
-			: rgbWithOpacity(this.rgb, this.getOpacity());
+		return rgbWithOpacity(this.rgb, this.getOpacity());
 	},
 
 	draw: function () {
@@ -715,7 +698,7 @@ Mass.prototype = {
 			var magnitude = Math.random() * 40;
 			var velocity = forXAndY(
 				[vectorAt(angle, magnitude), this.velocity],
-				forXAndY.add
+				forXAndY.add,
 			);
 			new FireParticle(this.position, velocity);
 		}
@@ -822,14 +805,16 @@ function Tether() {
 
 	document.addEventListener('touchend', function (e) {
 		self.locked = true;
-		game.lastMousePosition = {x: NaN, y: NaN};
 	});
 
 	function exitTether() {
-		if (document.pointerLockElement === canvas || document.mozPointerLockElement === canvas)
+		if (
+			document.pointerLockElement === canvas ||
+			document.mozPointerLockElement === canvas
+		)
 			self.locked = false;
 		else {
-			if(document.exitPointerLock) document.exitPointerLock();
+			if (document.exitPointerLock) document.exitPointerLock();
 			self.locked = true;
 			game.lastMousePosition = {x: NaN, y: NaN};
 		}
@@ -847,8 +832,8 @@ function Tether() {
 		game.lastMousePosition = {x: touch.clientX, y: touch.clientY};
 	}
 
-	document.addEventListener('touchstart', handleTouch);
-	document.addEventListener('touchmove', handleTouch);
+	document.addEventListener('touchstart', handleTouch, {passive: false});
+	document.addEventListener('touchmove', handleTouch, {passive: false});
 
 	return this;
 }
@@ -868,14 +853,15 @@ Tether.prototype.step = function () {
 	if (
 		this.unlockable &&
 		vectorMagnitude(
-			forXAndY([this.position, game.lastMousePosition], forXAndY.subtract)
+			forXAndY([this.position, game.lastMousePosition], forXAndY.subtract),
 		) < leniency
 	) {
-		if(canvas.requestPointerLock) canvas.requestPointerLock();
+		if (canvas.requestPointerLock) canvas.requestPointerLock();
 		if (
 			!(this.lastInteraction !== 'mouse' || document.pointerLockElement === canvas)
 		)
 			return;
+
 		this.locked = false;
 
 		if (!game.started) {
@@ -917,7 +903,7 @@ extend(Mass, Player);
 Player.prototype.step = function () {
 	this.force = forXAndY(
 		[this.tether.position, this.position],
-		forXAndY.subtract
+		forXAndY.subtract,
 	);
 	Mass.prototype.step.call(this);
 };
@@ -942,13 +928,9 @@ function Cable(tether, player) {
 		draw({
 			type: 'line',
 			stroke: true,
-			strokeStyle: `${
-				playerRGB === 'Rainbow'
-					? `${hsl(hslVal)}`
-					: `rgba(${playerRGB[0] ?? 20}, ${playerRGB[1] ?? 20}, ${
-							playerRGB[2] ?? 200
-					  }, 1)`
-			}`,
+			strokeStyle: `rgba(${playerRGB[0] ?? 20}, ${playerRGB[1] ?? 20}, ${
+				playerRGB[2] ?? 200
+			}, 1)`,
 			linePaths: [self.line()],
 		});
 
@@ -1058,7 +1040,7 @@ Enemy.prototype.drawWarning = function () {
 			Math.pow(1 - timeUntilSpawn, 3),
 		strokeStyle: rgbWithOpacity(
 			this.rgbWarning || this.rgb,
-			(1 - timeUntilSpawn) * this.getOpacity()
+			(1 - timeUntilSpawn) * this.getOpacity(),
 		),
 	});
 };
@@ -1154,7 +1136,7 @@ Eye.prototype.drawWarning = function () {
 		lineWidth: ((2 * this.shadowRadius) / 2) * Math.pow(1 - timeUntilSpawn, 3),
 		strokeStyle: rgbWithOpacity(
 			this.rgbWarning || this.rgb,
-			(1 - timeUntilSpawn) * this.getOpacity() * this.shadowOpacity
+			(1 - timeUntilSpawn) * this.getOpacity() * this.shadowOpacity,
 		),
 		arcCenter: this.position,
 		arcRadius: this.shadowRadius / 2 + Math.pow(timeUntilSpawn, 2) * 700,
@@ -1180,7 +1162,7 @@ Eye.prototype.drawIris = function () {
 
 	var irisVector = vectorAt(
 		vectorAngle(targetVector),
-		awakeness * this.radius * Math.pow(relativeDistance, 1 / 2) * 0.7
+		awakeness * this.radius * Math.pow(relativeDistance, 1 / 2) * 0.7,
 	);
 
 	var centreOfIris = forXAndY([this.position, irisVector], forXAndY.add);
@@ -1309,7 +1291,7 @@ FireParticle.prototype.getCurrentColor = function () {
 	var intensity = this.velocity.x / this.initialIntensity;
 	return rgbWithOpacity(
 		this.rgbForIntensity(intensity),
-		Math.pow(intensity, 0.25) * this.opacity
+		Math.pow(intensity, 0.25) * this.opacity,
 	);
 };
 
@@ -1324,7 +1306,7 @@ FireParticle.prototype.draw = function () {
 	var maturity = 1 - 1 / (timeAlive / 3 + 1);
 	var velocityButSmallerWhenYoung = forXAndY(
 		[this.velocity, {x: maturity, y: maturity}],
-		forXAndY.multiply
+		forXAndY.multiply,
 	);
 
 	draw({
@@ -1366,20 +1348,20 @@ Exhaust.prototype.rgbForIntensity = function (intensity) {
 function TeleportDust(source) {
 	var randomDelta = vectorAt(
 		Math.random() * Math.PI * 2,
-		Math.random() * source.radius * 0.1
+		Math.random() * source.radius * 0.1,
 	);
 
 	var velocityMultiplier = (Math.random() * 1) / 10;
 	var baseVelocity = forXAndY(
 		[source.teleportDelta, {x: velocityMultiplier, y: velocityMultiplier}],
-		forXAndY.multiply
+		forXAndY.multiply,
 	);
 	var velocity = forXAndY([baseVelocity, randomDelta], forXAndY.add);
 
 	var distanceFromStart = Math.random();
 	var vectorFromStart = forXAndY(
 		[source.teleportDelta, {x: distanceFromStart, y: distanceFromStart}],
-		forXAndY.multiply
+		forXAndY.multiply,
 	);
 	var basePosition = forXAndY([source.position, vectorFromStart], forXAndY.add);
 	var position = forXAndY([basePosition, randomDelta], forXAndY.add);
@@ -1589,7 +1571,7 @@ function Game() {
 	self.lastMousePosition = {x: NaN, y: NaN};
 
 	self.reset = function (waveIndex) {
-		if(document.exitPointerLock) document.exitPointerLock();
+		if (document.exitPointerLock) document.exitPointerLock();
 
 		self.background = new Background();
 		self.ended = null;
@@ -1697,7 +1679,7 @@ function Game() {
 			self.proximityToMuteButton = maximumPossibleDistanceBetweenTwoMasses;
 		} else {
 			self.proximityToMuteButton = vectorMagnitude(
-				forXAndY([muteButtonPosition, self.lastMousePosition], forXAndY.subtract)
+				forXAndY([muteButtonPosition, self.lastMousePosition], forXAndY.subtract),
 			);
 		}
 		self.clickShouldMute =
@@ -1786,7 +1768,7 @@ function Game() {
 							enemyPositionDelta.y,
 							massPositionDelta.x,
 							massPositionDelta.y,
-							1
+							1,
 						))
 			) {
 				enemyPosition = {
@@ -1983,7 +1965,7 @@ function Game() {
 		fromBottom,
 		fromRight,
 		headingText,
-		fillStyle
+		fillStyle,
 	) {
 		if (achievementList.length === 0) return fromBottom;
 
@@ -2031,7 +2013,7 @@ function Game() {
 				indicatedPosition = game.lastMousePosition;
 			}
 			var distanceFromCorner = vectorMagnitude(
-				lineDelta([indicatedPosition, {x: width, y: height}])
+				lineDelta([indicatedPosition, {x: width, y: height}]),
 			);
 			var distanceRange = [
 				maximumPossibleDistanceBetweenTwoMasses / 10,
@@ -2111,14 +2093,14 @@ function Game() {
 				fromBottom,
 				fromRight,
 				'Locked',
-				rgbWithOpacity([0, 0, 0], listingOpacity * 0.5)
+				rgbWithOpacity([0, 0, 0], listingOpacity * 0.5),
 			);
 			this.drawAchievements(
 				unlockedAchievements,
 				fromBottom,
 				fromRight,
 				'Unlocked',
-				rgbWithOpacity([0, 0, 0], listingOpacity)
+				rgbWithOpacity([0, 0, 0], listingOpacity),
 			);
 		}
 	};
@@ -2138,7 +2120,7 @@ function Game() {
 
 	self.positionShouldMute = function (position) {
 		self.proximityToMuteButton = vectorMagnitude(
-			forXAndY([muteButtonPosition, position], forXAndY.subtract)
+			forXAndY([muteButtonPosition, position], forXAndY.subtract),
 		);
 		return (
 			(!self.started || self.ended) &&
@@ -2237,7 +2219,7 @@ function Game() {
 	};
 
 	self.end = function () {
-		if(document.exitPointerLock) document.exitPointerLock();
+		if (document.exitPointerLock) document.exitPointerLock();
 		logScore(self.score);
 		self.ended = self.timeElapsed;
 		self.tether.locked = true;
@@ -2271,6 +2253,8 @@ document.addEventListener('click', handleClick);
 
 canvas.addEventListener('mousemove', function (e) {
 	if (document.pointerLockElement === canvas) {
+		if (game.tether.locked) game.tether.locked = false;
+
 		game.lastMousePosition.x += e.movementX;
 		game.lastMousePosition.y += e.movementY;
 
@@ -2317,4 +2301,3 @@ window.addEventListener('scroll', function (e) {
 window.scrollTo(0, 0);
 
 animate();
-
