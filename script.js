@@ -23,6 +23,7 @@ var DEBUG = window.location.hash === '#DEBUG',
 	uidCookieKey = 'tetherId',
 	uid,
 	playerRGB = [20, 20, 200],
+	hslVal = 0,
 	shouldUnmuteImmediately = false,
 	cookieExpiryDate = new Date();
 
@@ -228,6 +229,10 @@ function rgbWithOpacity(rgb, opacity) {
 	return 'rgba(' + rgbStrings.join(',') + ',' + opacity.toFixed(2) + ')';
 }
 
+function hsl(hsl) {
+	return 'hsl(' + hsl + ', 100%, 50%)';
+}
+
 function draw(opts) {
 	for (var defaultKey in draw.defaults) {
 		if (!(defaultKey in opts)) opts[defaultKey] = draw.defaults[defaultKey];
@@ -391,12 +396,13 @@ function initCanvas() {
 	) {
 		saveCookie(lastDayCookieKey, currentDate.getTime());
 		saveCookie(streakCountCookieKey, 0);
-	} else if (later48Hours > Number(Date.now()) > later24Hours) {
+	} else if (later48Hours > Number(new Date()) && Number(new Date()) > later24Hours) {
 		saveCookie(streakCountCookieKey, (streak += 1));
 		saveCookie(lastDayCookieKey, currentDate.getTime());
-	} else if (Number(Date.now()) < later24Hours) {
+	} else if (Number(new Date()) < later24Hours) {
 	} else {
 		saveCookie(streakCountCookieKey, 0);
+		saveCookie(lastDayCookieKey, currentDate.getTime());
 	}
 
 	switch (streak) {
@@ -427,7 +433,7 @@ function initCanvas() {
 			break;
 		default:
 		case 10:
-			playerRGB = [223, 41, 53];
+			playerRGB = "Rainbow";
 			console.log('Congrats on your 10 day streak!!');
 			break;
 	}
@@ -497,14 +503,18 @@ function timeToNextClaim() {
 	var deadline = lastDate.getTime() + 86400000;
 	var timeRemaining = deadline - new Date();
 	var formattedTime = new Date(timeRemaining);
-
-	return `${
-		formattedTime.getHours() > 9 ? '' : '0'
-	}${formattedTime.getHours()}:${
-		formattedTime.getMinutes() > 9 ? '' : '0'
-	}${formattedTime.getMinutes()}:${
-		formattedTime.getSeconds() > 9 ? '' : '0'
-	}${formattedTime.getSeconds()}`;
+	
+	if(formattedTime > 0) {
+		return `${
+			formattedTime.getHours() > 9 ? '' : '0'
+		}${formattedTime.getHours()}:${
+			formattedTime.getMinutes() > 9 ? '' : '0'
+		}${formattedTime.getMinutes()}:${
+			formattedTime.getSeconds() > 9 ? '' : '0'
+		}${formattedTime.getSeconds()}`;
+	} else {
+		return 'Right Now!'
+	}
 }
 
 function edgesOfCanvas() {
@@ -661,13 +671,17 @@ Mass.prototype = {
 	},
 
 	getCurrentColor: function () {
-		return rgbWithOpacity(this.rgb, this.getOpacity());
+		if(this.rgb === 'Rainbow') {
+			if(hslVal !== 360) hslVal++;
+			else hslVal = 0;
+		}
+		return this.rgb === 'Rainbow' ? hsl(hslVal) : rgbWithOpacity(this.rgb, this.getOpacity());
 	},
 
 	draw: function () {
 		var radius = this.radius;
 		if (this.visibleRadius !== null) radius = this.visibleRadius;
-
+		
 		draw({
 			type: 'arc',
 			arcRadius: radius,
@@ -913,9 +927,7 @@ function Cable(tether, player) {
 		draw({
 			type: 'line',
 			stroke: true,
-			strokeStyle: `rgba(${playerRGB[0] ?? 20}, ${playerRGB[1] ?? 20}, ${
-				playerRGB[2] ?? 200
-			}, 1)`,
+			strokeStyle: `${playerRGB === 'Rainbow' ? `${hsl(hslVal)}` : `rgba(${playerRGB[0] ?? 20}, ${playerRGB[1] ?? 20}, ${playerRGB[2] ?? 200}, 1)`}`,
 			linePaths: [self.line()],
 		});
 
