@@ -90,7 +90,3 @@ canvas {
 canvas.buttonhover {
   cursor: pointer;
 }
-
-canvas.hidecursor {
-  cursor: none;
-}
