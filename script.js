@@ -827,7 +827,7 @@ function Tether() {
 		game.lastMousePosition = {x: touch.clientX, y: touch.clientY};
 	}
 
-	document.addEventListener('touchstart', handleTouch);
+	document.addEventListener('touchstart', handleTouch, {passive: false});
 	document.addEventListener('touchmove', handleTouch, {passive: false});
 
 	return this;
