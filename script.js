@@ -871,7 +871,7 @@ Tether.prototype.step = function () {
 			forXAndY([this.position, game.lastMousePosition], forXAndY.subtract)
 		) < leniency
 	) {
-		canvas.requestPointerLock();
+		if(canvas.requestPointerLock) canvas.requestPointerLock();
 		if (
 			!(this.lastInteraction !== 'mouse' || document.pointerLockElement === canvas)
 		)
