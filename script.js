@@ -798,7 +798,7 @@ function Tether() {
 
 	document.addEventListener('mousemove', function (e) {
 		self.lastInteraction = 'mouse';
-		if (e.target === canvas) {
+		if (document.pointerLockElement !== canvas) {
 			game.lastMousePosition = {x: e.layerX, y: e.layerY};
 		}
 	});
@@ -808,11 +808,18 @@ function Tether() {
 		game.lastMousePosition = {x: NaN, y: NaN};
 	});
 
-	canvas.addEventListener('mouseout', function (e) {
-		canvas.classList.remove('hidecursor');
-		self.locked = true;
-		game.lastMousePosition = {x: NaN, y: NaN};
-	});
+	function exitTether() {
+ 		if(document.pointerLockElement === canvas || document.mozPointerLockElement === canvas) 
+			self.locked = false;
+		else {
+			document.exitPointerLock();
+			self.locked = true;
+			game.lastMousePosition = {x: NaN, y: NaN};
+  		}
+	}
+
+	if ("onpointerlockchange" in document) document.addEventListener('pointerlockchange', exitTether);
+	else if ("onmozpointerlockchange" in document) document.addEventListener('mozpointerlockchange', exitTether);
 
 	function handleTouch(e) {
 		e.preventDefault();
@@ -829,16 +836,14 @@ function Tether() {
 extend(Mass, Tether);
 
 Tether.prototype.setPosition = function (position) {
-	Mass.prototype.setPosition.call(this, position);
+	if (this.lastInteraction !== 'mouse' || document.pointerLockElement === canvas) Mass.prototype.setPosition.call(this, position);
 	if (this.position !== this.positionOnPreviousFrame) {
 		this.pointsScoredSinceLastInteraction = 0;
 	}
 };
 
 Tether.prototype.step = function () {
-	var leniency;
-	if (this.lastInteraction === 'touch') leniency = 50;
-	else leniency = 30;
+	var leniency = this.lastInteraction === 'touch' ? 50 : 30;
 
 	if (
 		this.unlockable &&
@@ -846,7 +851,8 @@ Tether.prototype.step = function () {
 			forXAndY([this.position, game.lastMousePosition], forXAndY.subtract),
 		) < leniency
 	) {
-		canvas.classList.add('hidecursor');
+		canvas.requestPointerLock();
+		if (!(this.lastInteraction !== 'mouse' || document.pointerLockElement === canvas)) return;
 		this.locked = false;
 
 		if (!game.started) {
@@ -1556,7 +1562,7 @@ function Game() {
 	self.lastMousePosition = {x: NaN, y: NaN};
 
 	self.reset = function (waveIndex) {
-		canvas.classList.remove('hidecursor');
+		document.exitPointerLock();
 
 		self.background = new Background();
 		self.ended = null;
@@ -2204,7 +2210,7 @@ function Game() {
 	};
 
 	self.end = function () {
-		canvas.classList.remove('hidecursor');
+		document.exitPointerLock();
 		logScore(self.score);
 		self.ended = self.timeElapsed;
 		self.tether.locked = true;
@@ -2236,6 +2242,19 @@ function handleClick(e) {
 
 document.addEventListener('click', handleClick);
 
+	canvas.addEventListener('mousemove', function (e) {
+		if (document.pointerLockElement === canvas) {
+			game.lastMousePosition.x += e.movementX;
+			game.lastMousePosition.y += e.movementY;
+
+			if (game.lastMousePosition.x < 0) game.lastMousePosition.x = 0;
+			else if (game.lastMousePosition.x > width) game.lastMousePosition.x = width;
+
+			if (game.lastMousePosition.y < 0) game.lastMousePosition.y = 0;
+			else if (game.lastMousePosition.y > height) game.lastMousePosition.y = height;
+		}
+	});
+
 document.addEventListener('touchstart', function (e) {
 	lastTouchStart = new Date().getTime();
 });
@@ -2245,28 +2264,6 @@ document.addEventListener('touchend', function (e) {
 		new Date().getTime() - lastTouchStart < 300
 	) {
 		handleClick(e);
-	}
-});
-
-var cursorPos = {x: width / 2, y: (height / 3) * 2};
-
-canvas.addEventListener('mousemove', function (e) {
-	if (document.pointerLockElement === canvas) {
-		var setPosition;
-		if (Object.values(game.lastMousePosition).every(Boolean)) {
-			setPosition = game.lastMousePosition;
-		} else {
-			setPosition = cursorPos;
-		}
-
-		setPosition.x += e.movementX;
-		setPosition.y += e.movementY;
-
-		if (setPosition.x < 0) setPosition.x = 0;
-		else if (setPosition.x > width) setPosition.x = width;
-
-		if (setPosition.y < 0) setPosition.y = 0;
-		else if (setPosition.y > height) setPosition.y = height;
 	}
 });
 
