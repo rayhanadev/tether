@@ -11,6 +11,8 @@ var DEBUG = window.location.hash === '#DEBUG',
 	height = window.innerHeight,
 	muteButtonPosition,
 	muteButtonProximityThreshold = 30,
+	playButtonPosition,
+	playButtonProximityThreshold = 30,
 	maximumPossibleDistanceBetweenTwoMasses,
 	highScoreCookieKey = 'tetherHighScore',
 	highScore = localStorage.getItem(highScoreCookieKey) ?? 0,
@@ -23,6 +25,8 @@ var DEBUG = window.location.hash === '#DEBUG',
 	uidCookieKey = 'tetherId',
 	uid,
 	playerRGB = [20, 20, 200],
+	hslVal = 0,
+	paused = false,
 	shouldUnmuteImmediately = false,
 	cookieExpiryDate = new Date();
 
@@ -228,6 +232,10 @@ function rgbWithOpacity(rgb, opacity) {
 	return 'rgba(' + rgbStrings.join(',') + ',' + opacity.toFixed(2) + ')';
 }
 
+function hsl(hsl) {
+	return 'hsl(' + hsl + ', 100%, 50%)';
+}
+ 
 function draw(opts) {
 	for (var defaultKey in draw.defaults) {
 		if (!(defaultKey in opts)) opts[defaultKey] = draw.defaults[defaultKey];
@@ -391,12 +399,13 @@ function initCanvas() {
 	) {
 		saveCookie(lastDayCookieKey, currentDate.getTime());
 		saveCookie(streakCountCookieKey, 0);
-	} else if (later48Hours > Number(Date.now()) > later24Hours) {
+	} else if (later48Hours > Number(new Date()) && Number(new Date()) > later24Hours) {
 		saveCookie(streakCountCookieKey, (streak += 1));
 		saveCookie(lastDayCookieKey, currentDate.getTime());
-	} else if (Number(Date.now()) < later24Hours) {
+	} else if (Number(new Date()) < later24Hours) {
 	} else {
 		saveCookie(streakCountCookieKey, 0);
+		saveCookie(lastDayCookieKey, currentDate.getTime());
 	}
 
 	switch (streak) {
@@ -427,7 +436,7 @@ function initCanvas() {
 			break;
 		default:
 		case 10:
-			playerRGB = [223, 41, 53];
+			playerRGB = 'Rainbow';
 			console.log('Congrats on your 10 day streak!!');
 			break;
 	}
@@ -435,6 +444,7 @@ function initCanvas() {
 	width = window.innerWidth;
 	height = window.innerHeight;
 	muteButtonPosition = {x: 32, y: height - 28};
+	playButtonPosition = {x: 32, y: height - 28};
 
 	maximumPossibleDistanceBetweenTwoMasses = vectorMagnitude({
 		x: width,
@@ -479,6 +489,7 @@ window.addEventListener('resize', function (event) {
 		y: height,
 	});
 	muteButtonPosition = {x: 32, y: height - 28};
+	playButtonPosition = {x: 32, y: height - 28};
 	devicePixelRatio = window.devicePixelRatio || 1;
 
 	canvas.style.width = width + 'px';
@@ -497,14 +508,18 @@ function timeToNextClaim() {
 	var deadline = lastDate.getTime() + 86400000;
 	var timeRemaining = deadline - new Date();
 	var formattedTime = new Date(timeRemaining);
-
-	return `${
-		formattedTime.getHours() > 9 ? '' : '0'
-	}${formattedTime.getHours()}:${
-		formattedTime.getMinutes() > 9 ? '' : '0'
-	}${formattedTime.getMinutes()}:${
-		formattedTime.getSeconds() > 9 ? '' : '0'
-	}${formattedTime.getSeconds()}`;
+	
+	if(formattedTime > 0) {
+ 		return `${
+ 			formattedTime.getHours() > 9 ? '' : '0'
+ 		}${formattedTime.getHours()}:${
+ 			formattedTime.getMinutes() > 9 ? '' : '0'
+ 		}${formattedTime.getMinutes()}:${
+ 			formattedTime.getSeconds() > 9 ? '' : '0'
+ 		}${formattedTime.getSeconds()}`;
+ 	} else {
+ 		return 'Right Now!'
+ 	}
 }
 
 function edgesOfCanvas() {
@@ -661,7 +676,12 @@ Mass.prototype = {
 	},
 
 	getCurrentColor: function () {
-		return rgbWithOpacity(this.rgb, this.getOpacity());
+		if(this.rgb === 'Rainbow') {
+			if(hslVal !== 360) hslVal++;
+			else hslVal = 0;
+		}
+		
+		return this.rgb === 'Rainbow' ? hsl(hslVal) : rgbWithOpacity(this.rgb, this.getOpacity());
 	},
 
 	draw: function () {
@@ -928,9 +948,7 @@ function Cable(tether, player) {
 		draw({
 			type: 'line',
 			stroke: true,
-			strokeStyle: `rgba(${playerRGB[0] ?? 20}, ${playerRGB[1] ?? 20}, ${
-				playerRGB[2] ?? 200
-			}, 1)`,
+			strokeStyle: `${playerRGB === 'Rainbow' ? `${hsl(hslVal)}` : `rgba(${playerRGB[0] ?? 20}, ${playerRGB[1] ?? 20}, ${playerRGB[2] ?? 200}, 1)`}`,
 			linePaths: [self.line()],
 		});
 
@@ -1677,9 +1695,13 @@ function Game() {
 
 		if (isNaN(self.lastMousePosition.x)) {
 			self.proximityToMuteButton = maximumPossibleDistanceBetweenTwoMasses;
+			self.proximityToPlayButton = maximumPossibleDistanceBetweenTwoMasses;
 		} else {
 			self.proximityToMuteButton = vectorMagnitude(
 				forXAndY([muteButtonPosition, self.lastMousePosition], forXAndY.subtract),
+			);
+			self.proximityToPlayButton = vectorMagnitude(
+				forXAndY([playButtonPosition, self.lastMousePosition], forXAndY.subtract),
 			);
 		}
 		self.clickShouldMute =
@@ -1687,7 +1709,14 @@ function Game() {
 			self.proximityToMuteButton < muteButtonProximityThreshold
 				? true
 				: false;
+		self.clickShouldPlay =
+			(self.started && !self.ended) &&
+			self.proximityToPlayButton < playButtonProximityThreshold
+				? true
+				: false;
 		if (self.clickShouldMute !== canvas.classList.contains('buttonhover'))
+			canvas.classList.toggle('buttonhover');
+		if (self.clickShouldPlay !== canvas.classList.contains('buttonhover'))
 			canvas.classList.toggle('buttonhover');
 
 		self.background.step();
@@ -2127,6 +2156,29 @@ function Game() {
 			self.proximityToMuteButton < muteButtonProximityThreshold
 		);
 	};
+	
+	self.eventShouldPlay = function (e) {
+		var position;
+
+		if (e.changedTouches) {
+			var touch = e.changedTouches[0];
+			position = {x: touch.pageX, y: touch.pageY};
+		} else {
+			position = {x: e.layerX, y: e.layerY};
+		}
+
+		return self.positionShouldPlay(position);
+	};
+	
+	self.positionShouldPlay = function (position) {
+		self.proximityToPlayButton = vectorMagnitude(
+			forXAndY([playButtonPosition, position], forXAndY.subtract),
+		);
+		return (
+			(self.started && !self.ended) &&
+			self.proximityToPlayButton < playButtonProximityThreshold
+		);
+	};
 
 	self.drawMuteButton = function () {
 		if (!self.clickShouldMute && music.element.paused) {
@@ -2152,6 +2204,34 @@ function Game() {
 		draw({
 			type: 'text',
 			text: music.element.paused ? '\uf025' : '\uf026',
+			fontFamily: 'FontAwesome',
+			fontSize: 30,
+			textAlign: 'center',
+			textBaseline: 'middle',
+			fillStyle: rgbWithOpacity([0, 0, 0], opacity),
+			textPosition: visiblePosition,
+		});
+	};
+	
+	self.drawPlayButton = function () {
+		if (!self.clickShouldPlay && paused) {
+			xNoise = (Math.random() - 0.5) * (500 / self.proximityToPlayButton);
+			yNoise = (Math.random() - 0.5) * (500 / self.proximityToPlayButton);
+			visiblePosition = {
+				x: xNoise + playButtonPosition.x,
+				y: yNoise + playButtonPosition.y + Math.sin(new Date().getTime() / 250) * 3,
+			};
+		} else {
+			visiblePosition = {x: playButtonPosition.x, y: playButtonPosition.y};
+		}
+
+		var opacity = 1;
+
+		if (self.clickShouldPlay && !paused) opacity = 0.5;
+
+		draw({
+			type: 'text',
+			text: paused ? '\uf04b' : '\uf04c',
 			fontFamily: 'FontAwesome',
 			fontSize: 30,
 			textAlign: 'center',
@@ -2211,6 +2291,7 @@ function Game() {
 		self.drawAchievementNotifications();
 
 		if (!self.started || self.ended) self.drawMuteButton();
+		if (self.started && !self.ended) self.drawPlayButton();
 
 		if ((self.tether.lastInteraction === 'mouse' && self.ended) || !self.started)
 			self.drawAchievementUI();
@@ -2244,12 +2325,19 @@ function handleClick(e) {
 			music.element.pause();
 			saveCookie(musicMutedCookieKey, 'false');
 		}
+	} else if(game.eventShouldPlay(e)) {
+		paused = !paused
 	} else if (game.ended) {
 		game.reset(0);
 	}
 }
 
+function handleKey(e) {
+	if (e.code === 'KeyP') paused = !paused;
+}
+
 document.addEventListener('click', handleClick);
+document.addEventListener('keydown', handleKey);
 
 canvas.addEventListener('mousemove', function (e) {
 	if (document.pointerLockElement === canvas) {
@@ -2286,9 +2374,16 @@ window.requestFrame =
 		window.setTimeout(callback, 1000 / 60);
 	};
 
+var pauseDelay = 0;
 function animate() {
 	requestFrame(animate);
-	game.step();
+	if(!paused) {
+		game.step();
+		if(pauseDelay !== 0) pauseDelay = 0;
+	} else if (paused && pauseDelay !== 2) {
+		game.step();
+		pauseDelay++;
+	}
 }
 
 var scrollTimeout;
