@@ -1,6 +1,6 @@
 # **tether!** Swing Around a Ball of Destruction!
 
-![demo](https://tether.rayhanadev.repl.co/public/opengraphimage.png)
+![demo](https://tether.rayhanadev.repl.co/public/tether_cover.png)
 
 ### PLAY IT [FULLSCREEN](https://tether.rayhanadev.repl.co) NOW!
 
