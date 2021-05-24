@@ -184,7 +184,7 @@ function pointInPolygon(point, polygon) {
 
 function vectorMagnitude(vector) {
 	return Math.abs(
-		Math.pow(Math.pow(vector.x, 2) + Math.pow(vector.y, 2), 1 / 2),
+		Math.pow(Math.pow(vector.x, 2) + Math.pow(vector.y, 2), 1 / 2)
 	);
 }
 
@@ -235,7 +235,7 @@ function rgbWithOpacity(rgb, opacity) {
 function hsl(hsl) {
 	return 'hsl(' + hsl + ', 100%, 50%)';
 }
- 
+
 function draw(opts) {
 	for (var defaultKey in draw.defaults) {
 		if (!(defaultKey in opts)) opts[defaultKey] = draw.defaults[defaultKey];
@@ -297,7 +297,7 @@ draw.arc = function (opts) {
 		opts.arcCenter.y,
 		opts.arcRadius,
 		opts.arcStart,
-		opts.arcFinish,
+		opts.arcFinish
 	);
 };
 
@@ -399,7 +399,10 @@ function initCanvas() {
 	) {
 		saveCookie(lastDayCookieKey, currentDate.getTime());
 		saveCookie(streakCountCookieKey, 0);
-	} else if (later48Hours > Number(new Date()) && Number(new Date()) > later24Hours) {
+	} else if (
+		later48Hours > Number(new Date()) &&
+		Number(new Date()) > later24Hours
+	) {
 		saveCookie(streakCountCookieKey, (streak += 1));
 		saveCookie(lastDayCookieKey, currentDate.getTime());
 	} else if (Number(new Date()) < later24Hours) {
@@ -508,18 +511,18 @@ function timeToNextClaim() {
 	var deadline = lastDate.getTime() + 86400000;
 	var timeRemaining = deadline - new Date();
 	var formattedTime = new Date(timeRemaining);
-	
-	if(formattedTime > 0) {
- 		return `${
- 			formattedTime.getHours() > 9 ? '' : '0'
- 		}${formattedTime.getHours()}:${
- 			formattedTime.getMinutes() > 9 ? '' : '0'
- 		}${formattedTime.getMinutes()}:${
- 			formattedTime.getSeconds() > 9 ? '' : '0'
- 		}${formattedTime.getSeconds()}`;
- 	} else {
- 		return 'Right Now!'
- 	}
+
+	if (formattedTime > 0) {
+		return `${
+			formattedTime.getHours() > 9 ? '' : '0'
+		}${formattedTime.getHours()}:${
+			formattedTime.getMinutes() > 9 ? '' : '0'
+		}${formattedTime.getMinutes()}:${
+			formattedTime.getSeconds() > 9 ? '' : '0'
+		}${formattedTime.getSeconds()}`;
+	} else {
+		return 'Right Now!';
+	}
 }
 
 function edgesOfCanvas() {
@@ -638,7 +641,7 @@ Mass.prototype = {
 
 	reactToVelocity: function () {
 		this.setPosition(
-			forXAndY([this.position, this.velocity], forXAndY.aPlusBTimesSpeed),
+			forXAndY([this.position, this.velocity], forXAndY.aPlusBTimesSpeed)
 		);
 		this.collideWithWalls();
 	},
@@ -654,7 +657,7 @@ Mass.prototype = {
 		var self = this;
 		var projectedVelocity = forXAndY(
 			[this.velocity, this.velocityDelta()],
-			forXAndY.aPlusBTimesSpeed,
+			forXAndY.aPlusBTimesSpeed
 		);
 
 		this.velocity = forXAndY([projectedVelocity], function (projected) {
@@ -676,12 +679,14 @@ Mass.prototype = {
 	},
 
 	getCurrentColor: function () {
-		if(this.rgb === 'Rainbow') {
-			if(hslVal !== 360) hslVal++;
+		if (this.rgb === 'Rainbow') {
+			if (hslVal !== 360) hslVal++;
 			else hslVal = 0;
 		}
-		
-		return this.rgb === 'Rainbow' ? hsl(hslVal) : rgbWithOpacity(this.rgb, this.getOpacity());
+
+		return this.rgb === 'Rainbow'
+			? hsl(hslVal)
+			: rgbWithOpacity(this.rgb, this.getOpacity());
 	},
 
 	draw: function () {
@@ -718,7 +723,7 @@ Mass.prototype = {
 			var magnitude = Math.random() * 40;
 			var velocity = forXAndY(
 				[vectorAt(angle, magnitude), this.velocity],
-				forXAndY.add,
+				forXAndY.add
 			);
 			new FireParticle(this.position, velocity);
 		}
@@ -817,8 +822,11 @@ function Tether() {
 	var self = this;
 
 	document.addEventListener('mousemove', function (e) {
-    if (self.lastInteraction === 'mouse' && document.pointerLockElement !== canvas)
-      game.lastMousePosition = {x: e.layerX, y: e.layerY};
+		if (
+			self.lastInteraction === 'mouse' &&
+			document.pointerLockElement !== canvas
+		)
+			game.lastMousePosition = {x: e.layerX, y: e.layerY};
 		self.lastInteraction = 'mouse';
 	});
 
@@ -832,8 +840,7 @@ function Tether() {
 			document.mozPointerLockElement === canvas
 		)
 			self.locked = false;
-		else
-			self.locked = true;
+		else self.locked = true;
 	}
 
 	if ('onpointerlockchange' in document)
@@ -844,7 +851,7 @@ function Tether() {
 	function handleTouch(e) {
 		e.preventDefault();
 		self.lastInteraction = 'touch';
-    if (document.pointerLockElement) document.exitPointerLock();
+		if (document.pointerLockElement) document.exitPointerLock();
 		touch = e.changedTouches[0];
 		game.lastMousePosition = {x: touch.clientX, y: touch.clientY};
 	}
@@ -870,7 +877,7 @@ Tether.prototype.step = function () {
 	if (
 		this.unlockable &&
 		vectorMagnitude(
-			forXAndY([this.position, game.lastMousePosition], forXAndY.subtract),
+			forXAndY([this.position, game.lastMousePosition], forXAndY.subtract)
 		) < leniency
 	) {
 		if (canvas.requestPointerLock) canvas.requestPointerLock();
@@ -920,7 +927,7 @@ extend(Mass, Player);
 Player.prototype.step = function () {
 	this.force = forXAndY(
 		[this.tether.position, this.position],
-		forXAndY.subtract,
+		forXAndY.subtract
 	);
 	Mass.prototype.step.call(this);
 };
@@ -945,7 +952,13 @@ function Cable(tether, player) {
 		draw({
 			type: 'line',
 			stroke: true,
-			strokeStyle: `${playerRGB === 'Rainbow' ? `${hsl(hslVal)}` : `rgba(${playerRGB[0] ?? 20}, ${playerRGB[1] ?? 20}, ${playerRGB[2] ?? 200}, 1)`}`,
+			strokeStyle: `${
+				playerRGB === 'Rainbow'
+					? `${hsl(hslVal)}`
+					: `rgba(${playerRGB[0] ?? 20}, ${playerRGB[1] ?? 20}, ${
+							playerRGB[2] ?? 200
+					  }, 1)`
+			}`,
 			linePaths: [self.line()],
 		});
 
@@ -1055,7 +1068,7 @@ Enemy.prototype.drawWarning = function () {
 			Math.pow(1 - timeUntilSpawn, 3),
 		strokeStyle: rgbWithOpacity(
 			this.rgbWarning || this.rgb,
-			(1 - timeUntilSpawn) * this.getOpacity(),
+			(1 - timeUntilSpawn) * this.getOpacity()
 		),
 	});
 };
@@ -1151,7 +1164,7 @@ Eye.prototype.drawWarning = function () {
 		lineWidth: ((2 * this.shadowRadius) / 2) * Math.pow(1 - timeUntilSpawn, 3),
 		strokeStyle: rgbWithOpacity(
 			this.rgbWarning || this.rgb,
-			(1 - timeUntilSpawn) * this.getOpacity() * this.shadowOpacity,
+			(1 - timeUntilSpawn) * this.getOpacity() * this.shadowOpacity
 		),
 		arcCenter: this.position,
 		arcRadius: this.shadowRadius / 2 + Math.pow(timeUntilSpawn, 2) * 700,
@@ -1177,7 +1190,7 @@ Eye.prototype.drawIris = function () {
 
 	var irisVector = vectorAt(
 		vectorAngle(targetVector),
-		awakeness * this.radius * Math.pow(relativeDistance, 1 / 2) * 0.7,
+		awakeness * this.radius * Math.pow(relativeDistance, 1 / 2) * 0.7
 	);
 
 	var centreOfIris = forXAndY([this.position, irisVector], forXAndY.add);
@@ -1306,7 +1319,7 @@ FireParticle.prototype.getCurrentColor = function () {
 	var intensity = this.velocity.x / this.initialIntensity;
 	return rgbWithOpacity(
 		this.rgbForIntensity(intensity),
-		Math.pow(intensity, 0.25) * this.opacity,
+		Math.pow(intensity, 0.25) * this.opacity
 	);
 };
 
@@ -1321,7 +1334,7 @@ FireParticle.prototype.draw = function () {
 	var maturity = 1 - 1 / (timeAlive / 3 + 1);
 	var velocityButSmallerWhenYoung = forXAndY(
 		[this.velocity, {x: maturity, y: maturity}],
-		forXAndY.multiply,
+		forXAndY.multiply
 	);
 
 	draw({
@@ -1363,20 +1376,20 @@ Exhaust.prototype.rgbForIntensity = function (intensity) {
 function TeleportDust(source) {
 	var randomDelta = vectorAt(
 		Math.random() * Math.PI * 2,
-		Math.random() * source.radius * 0.1,
+		Math.random() * source.radius * 0.1
 	);
 
 	var velocityMultiplier = (Math.random() * 1) / 10;
 	var baseVelocity = forXAndY(
 		[source.teleportDelta, {x: velocityMultiplier, y: velocityMultiplier}],
-		forXAndY.multiply,
+		forXAndY.multiply
 	);
 	var velocity = forXAndY([baseVelocity, randomDelta], forXAndY.add);
 
 	var distanceFromStart = Math.random();
 	var vectorFromStart = forXAndY(
 		[source.teleportDelta, {x: distanceFromStart, y: distanceFromStart}],
-		forXAndY.multiply,
+		forXAndY.multiply
 	);
 	var basePosition = forXAndY([source.position, vectorFromStart], forXAndY.add);
 	var position = forXAndY([basePosition, randomDelta], forXAndY.add);
@@ -1691,13 +1704,14 @@ function Game() {
 		}
 
 		if (isNaN(self.lastMousePosition.x)) {
-			self.proximityToMuteButton = self.proximityToPlayButton = maximumPossibleDistanceBetweenTwoMasses;
+			self.proximityToMuteButton = self.proximityToPlayButton =
+				maximumPossibleDistanceBetweenTwoMasses;
 		} else {
 			self.proximityToMuteButton = vectorMagnitude(
-				forXAndY([muteButtonPosition, self.lastMousePosition], forXAndY.subtract),
+				forXAndY([muteButtonPosition, self.lastMousePosition], forXAndY.subtract)
 			);
 			self.proximityToPlayButton = vectorMagnitude(
-				forXAndY([playButtonPosition, self.lastMousePosition], forXAndY.subtract),
+				forXAndY([playButtonPosition, self.lastMousePosition], forXAndY.subtract)
 			);
 		}
 		self.clickShouldMute =
@@ -1706,7 +1720,8 @@ function Game() {
 				? true
 				: false;
 		self.clickShouldPlay =
-			(self.started && !self.ended) &&
+			self.started &&
+			!self.ended &&
 			self.proximityToPlayButton < playButtonProximityThreshold
 				? true
 				: false;
@@ -1793,7 +1808,7 @@ function Game() {
 							enemyPositionDelta.y,
 							massPositionDelta.x,
 							massPositionDelta.y,
-							1,
+							1
 						))
 			) {
 				enemyPosition = {
@@ -1904,16 +1919,16 @@ function Game() {
 				y: height / 3 + 55,
 			},
 		});
-		
+
 		draw({
 			type: 'text',
-			text: 
-				{touch: 'tap', mouse: 'click'}[self.tether.lastInteraction] + ' to start',
+			text:
+				({touch: 'tap', mouse: 'click'}[self.tether.lastInteraction] ?? 'click') + ' to start',
 			fillStyle: rgbWithOpacity([0, 0, 0], opacity),
 			fontSize: 24,
 			textPosition: {
 				x: width / 2,
-				y: height / 3 + 80,
+				y: (height / 4) * 3 + 80,
 			},
 		});
 	};
@@ -1924,12 +1939,12 @@ function Game() {
 		var opacity = -Math.sin((game.timeElapsed - game.ended) * 3);
 		if (opacity < 0) opacity = 0;
 
-    var fontSize = Math.min(width / 5, height / 8);
+		var fontSize = Math.min(width / 5, height / 8);
 
 		draw({
 			type: 'text',
 			text:
-				{touch: 'tap', mouse: 'click'}[self.tether.lastInteraction] + ' to retry',
+				({touch: 'tap', mouse: 'click'}[self.tether.lastInteraction] ?? 'click') + ' to retry',
 			fontSize: fontSize,
 			textPosition: {x: width / 2, y: height / 2 - fontSize / 2},
 			fillStyle: rgbWithOpacity([0, 0, 0], opacity),
@@ -2001,7 +2016,7 @@ function Game() {
 		fromBottom,
 		fromRight,
 		headingText,
-		fillStyle,
+		fillStyle
 	) {
 		if (achievementList.length === 0) return fromBottom;
 
@@ -2039,6 +2054,22 @@ function Game() {
 		return fromBottom;
 	};
 
+	self.drawPauseMessage = function () {
+		var fontSize = Math.min(width / 5, height / 8);
+		draw({
+			type: 'text',
+			text:
+				({touch: 'tap', mouse: 'click'}[self.tether.lastInteraction] ?? 'click') + 
+				' to unpause',
+			fillStyle: '#000',
+			fontSize: fontSize,
+			textPosition: {
+				x: width / 2,
+				y: height / 2 - fontSize / 2,
+			},
+		});
+	}
+
 	self.drawAchievementUI = function () {
 		var unlockedAchievements = getUnlockedAchievements();
 		if (unlockedAchievements.length > 0) {
@@ -2049,7 +2080,7 @@ function Game() {
 				indicatedPosition = game.lastMousePosition;
 			}
 			var distanceFromCorner = vectorMagnitude(
-				lineDelta([indicatedPosition, {x: width, y: height}]),
+				lineDelta([indicatedPosition, {x: width, y: height}])
 			);
 			var distanceRange = [
 				maximumPossibleDistanceBetweenTwoMasses / 10,
@@ -2129,14 +2160,14 @@ function Game() {
 				fromBottom,
 				fromRight,
 				'Locked',
-				rgbWithOpacity([0, 0, 0], listingOpacity * 0.5),
+				rgbWithOpacity([0, 0, 0], listingOpacity * 0.5)
 			);
 			this.drawAchievements(
 				unlockedAchievements,
 				fromBottom,
 				fromRight,
 				'Unlocked',
-				rgbWithOpacity([0, 0, 0], listingOpacity),
+				rgbWithOpacity([0, 0, 0], listingOpacity)
 			);
 		}
 	};
@@ -2155,13 +2186,13 @@ function Game() {
 	};
 
 	self.positionShouldMute = function (position) {
-    if (self.started || !self.ended) return false;
+		if (self.started || !self.ended) return false;
 		self.proximityToMuteButton = vectorMagnitude(
-			forXAndY([muteButtonPosition, position], forXAndY.subtract),
+			forXAndY([muteButtonPosition, position], forXAndY.subtract)
 		);
-		return (self.proximityToMuteButton < muteButtonProximityThreshold);
+		return self.proximityToMuteButton < muteButtonProximityThreshold;
 	};
-	
+
 	self.eventShouldPlay = function (e) {
 		var position;
 
@@ -2169,19 +2200,19 @@ function Game() {
 			var touch = e.changedTouches[0];
 			position = {x: touch.pageX, y: touch.pageY};
 		} else {
-			position = (game.lastMousePosition || {x: e.layerX, y: e.layerY});
+			position = game.lastMousePosition || {x: e.layerX, y: e.layerY};
 		}
 
 		return self.positionShouldPlay(position);
 	};
-	
+
 	self.positionShouldPlay = function (position) {
 		if (!(self.started && !self.ended)) return false;
 		if (paused) return true;
 		self.proximityToPlayButton = vectorMagnitude(
-			forXAndY([playButtonPosition, position], forXAndY.subtract),
+			forXAndY([playButtonPosition, position], forXAndY.subtract)
 		);
-		return (self.proximityToPlayButton < playButtonProximityThreshold);
+		return self.proximityToPlayButton < playButtonProximityThreshold;
 	};
 
 	self.drawMuteButton = function () {
@@ -2216,7 +2247,7 @@ function Game() {
 			textPosition: visiblePosition,
 		});
 	};
-	
+
 	self.drawPlayButton = function () {
 		if (!self.clickShouldPlay && paused) {
 			xNoise = (Math.random() - 0.5) * (500 / self.proximityToPlayButton);
@@ -2329,7 +2360,7 @@ function handleClick(e) {
 			music.element.pause();
 			saveCookie(musicMutedCookieKey, 'false');
 		}
-	} else if(game.eventShouldPlay(e)) {
+	} else if (game.eventShouldPlay(e)) {
 		paused = !paused;
 	} else if (game.ended) {
 		game.reset(0);
@@ -2344,8 +2375,8 @@ document.addEventListener('click', handleClick);
 document.addEventListener('keydown', handleKey);
 
 canvas.addEventListener('mousemove', function (e) {
-  if (game.tether.lastInteraction === 'touch' && document.pointerLockElement) 
-    document.exitPointerLock();
+	if (game.tether.lastInteraction === 'touch' && document.pointerLockElement)
+		document.exitPointerLock();
 	else if (document.pointerLockElement === canvas) {
 		if (game.tether.locked) game.tether.locked = false;
 
@@ -2383,36 +2414,21 @@ window.requestFrame =
 var pauseDelay = 0;
 function animate() {
 	requestFrame(animate);
-	if(!paused) {
+	if (!paused) {
 		game.step();
 		if (pauseDelay !== 0) {
-      pauseDelay = 0;
-      if (canvas.requestPointerLock) canvas.requestPointerLock();
-      game.player.teleportTo({
-		    x: game.lastMousePosition.x + 50,
-		    y: game.lastMousePosition.y + 50
-	    });
-    }
+			pauseDelay = 0;
+			if (canvas.requestPointerLock) canvas.requestPointerLock();
+			game.player.teleportTo({
+				x: game.lastMousePosition.x + 50,
+				y: game.lastMousePosition.y + 50,
+			});
+		}
 	} else if (paused && pauseDelay !== 2) {
 		game.step();
+		game.drawPauseMessage();
+		if (document.pointerLockElement) document.exitPointerLock();
 		pauseDelay++;
-    if (pauseDelay === 2) {
-      if (document.pointerLockElement) document.exitPointerLock();
-
-      var fontSize = Math.min(width / 5, height / 8);
-
-      draw({
-			  type: 'text',
-			  text: 
-          {touch: 'tap', mouse: 'click'}[game.tether.lastInteraction] + ' to unpause',
-			  fillStyle: "#000",
-			  fontSize: fontSize,
-			  textPosition: {
-			  	x: width / 2,
-			  	y: height / 2 - fontSize / 2,
-			  },
-		  });
-    }
 	}
 }
 
@@ -2426,3 +2442,4 @@ window.addEventListener('scroll', function (e) {
 window.scrollTo(0, 0);
 
 animate();
+
