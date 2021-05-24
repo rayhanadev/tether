@@ -834,8 +834,8 @@ function Tether() {
 		)
 			self.locked = false;
 		else {
-			if (document.exitPointerLock) document.exitPointerLock();
 			self.locked = true;
+			paused = true;
 			game.lastMousePosition = {x: NaN, y: NaN};
 		}
 	}
@@ -1694,8 +1694,7 @@ function Game() {
 		}
 
 		if (isNaN(self.lastMousePosition.x)) {
-			self.proximityToMuteButton = maximumPossibleDistanceBetweenTwoMasses;
-			self.proximityToPlayButton = maximumPossibleDistanceBetweenTwoMasses;
+			self.proximityToMuteButton = self.proximityToPlayButton = maximumPossibleDistanceBetweenTwoMasses;
 		} else {
 			self.proximityToMuteButton = vectorMagnitude(
 				forXAndY([muteButtonPosition, self.lastMousePosition], forXAndY.subtract),
@@ -1909,6 +1908,18 @@ function Game() {
 			textPosition: {
 				x: width / 2,
 				y: height / 3 + 55,
+			},
+		});
+		
+		draw({
+			type: 'text',
+			text: 
+				{touch: 'drag', mouse: 'click'}[self.tether.lastInteraction] + 'to start',
+			fillStyle: rgbWithOpacity([0, 0, 0], opacity),
+			fontSize: 30,
+			textPosition: {
+				x: width / 2,
+				y: height / 3 - 20,
 			},
 		});
 	};
@@ -2171,13 +2182,12 @@ function Game() {
 	};
 	
 	self.positionShouldPlay = function (position) {
+		if (!(self.started && !self.ended)) return false;
+		if (paused) return true;
 		self.proximityToPlayButton = vectorMagnitude(
 			forXAndY([playButtonPosition, position], forXAndY.subtract),
 		);
-		return (
-			(self.started && !self.ended) &&
-			self.proximityToPlayButton < playButtonProximityThreshold
-		);
+		return (self.proximityToPlayButton < playButtonProximityThreshold);
 	};
 
 	self.drawMuteButton = function () {
