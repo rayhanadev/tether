@@ -1914,12 +1914,12 @@ function Game() {
 		draw({
 			type: 'text',
 			text: 
-				{touch: 'drag', mouse: 'click'}[self.tether.lastInteraction] + 'to start',
+				{touch: 'tap', mouse: 'click'}[self.tether.lastInteraction] + 'to start',
 			fillStyle: rgbWithOpacity([0, 0, 0], opacity),
-			fontSize: 30,
+			fontSize: 28,
 			textPosition: {
 				x: width / 2,
-				y: height / 3 - 20,
+				y: height / 3 + 80,
 			},
 		});
 	};
