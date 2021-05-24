@@ -817,10 +817,9 @@ function Tether() {
 	var self = this;
 
 	document.addEventListener('mousemove', function (e) {
+    if (self.lastInteraction === 'mouse' && document.pointerLockElement !== canvas)
+      game.lastMousePosition = {x: e.layerX, y: e.layerY};
 		self.lastInteraction = 'mouse';
-		if (document.pointerLockElement !== canvas) {
-			game.lastMousePosition = {x: e.layerX, y: e.layerY};
-		}
 	});
 
 	document.addEventListener('touchend', function (e) {
@@ -833,11 +832,8 @@ function Tether() {
 			document.mozPointerLockElement === canvas
 		)
 			self.locked = false;
-		else {
+		else
 			self.locked = true;
-			paused = true;
-			game.lastMousePosition = {x: NaN, y: NaN};
-		}
 	}
 
 	if ('onpointerlockchange' in document)
@@ -848,6 +844,7 @@ function Tether() {
 	function handleTouch(e) {
 		e.preventDefault();
 		self.lastInteraction = 'touch';
+    if (document.pointerLockElement) document.exitPointerLock();
 		touch = e.changedTouches[0];
 		game.lastMousePosition = {x: touch.clientX, y: touch.clientY};
 	}
@@ -1589,7 +1586,7 @@ function Game() {
 	self.lastMousePosition = {x: NaN, y: NaN};
 
 	self.reset = function (waveIndex) {
-		if (document.exitPointerLock) document.exitPointerLock();
+		if (document.pointerLockElement) document.exitPointerLock();
 
 		self.background = new Background();
 		self.ended = null;
@@ -1883,10 +1880,7 @@ function Game() {
 	};
 
 	self.drawLogo = function () {
-		var opacity;
-		if (!game.started) opacity = 1;
-		else opacity = Math.pow(1 - game.timeElapsed / 50, 3);
-
+		var opacity = game.started ? Math.pow(1 - game.timeElapsed / 50, 3) : 1;
 		if (opacity < 0.001) return;
 
 		draw({
@@ -1914,9 +1908,9 @@ function Game() {
 		draw({
 			type: 'text',
 			text: 
-				{touch: 'tap', mouse: 'click'}[self.tether.lastInteraction] + 'to start',
+				{touch: 'tap', mouse: 'click'}[self.tether.lastInteraction] + ' to start',
 			fillStyle: rgbWithOpacity([0, 0, 0], opacity),
-			fontSize: 28,
+			fontSize: 24,
 			textPosition: {
 				x: width / 2,
 				y: height / 3 + 80,
@@ -1930,12 +1924,14 @@ function Game() {
 		var opacity = -Math.sin((game.timeElapsed - game.ended) * 3);
 		if (opacity < 0) opacity = 0;
 
+    var fontSize = Math.min(width / 5, height / 8);
+
 		draw({
 			type: 'text',
 			text:
 				{touch: 'tap', mouse: 'click'}[self.tether.lastInteraction] + ' to retry',
-			fontSize: Math.min(width / 5, height / 8),
-			textPosition: {x: width / 2, y: height / 2},
+			fontSize: fontSize,
+			textPosition: {x: width / 2, y: height / 2 - fontSize / 2},
 			fillStyle: rgbWithOpacity([0, 0, 0], opacity),
 		});
 	};
@@ -2159,13 +2155,11 @@ function Game() {
 	};
 
 	self.positionShouldMute = function (position) {
+    if (self.started || !self.ended) return false;
 		self.proximityToMuteButton = vectorMagnitude(
 			forXAndY([muteButtonPosition, position], forXAndY.subtract),
 		);
-		return (
-			(!self.started || self.ended) &&
-			self.proximityToMuteButton < muteButtonProximityThreshold
-		);
+		return (self.proximityToMuteButton < muteButtonProximityThreshold);
 	};
 	
 	self.eventShouldPlay = function (e) {
@@ -2175,7 +2169,7 @@ function Game() {
 			var touch = e.changedTouches[0];
 			position = {x: touch.pageX, y: touch.pageY};
 		} else {
-			position = {x: e.layerX, y: e.layerY};
+			position = (game.lastMousePosition || {x: e.layerX, y: e.layerY});
 		}
 
 		return self.positionShouldPlay(position);
@@ -2310,7 +2304,7 @@ function Game() {
 	};
 
 	self.end = function () {
-		if (document.exitPointerLock) document.exitPointerLock();
+		if (document.pointerLockElement) document.exitPointerLock();
 		logScore(self.score);
 		self.ended = self.timeElapsed;
 		self.tether.locked = true;
@@ -2336,7 +2330,7 @@ function handleClick(e) {
 			saveCookie(musicMutedCookieKey, 'false');
 		}
 	} else if(game.eventShouldPlay(e)) {
-		paused = !paused
+		paused = !paused;
 	} else if (game.ended) {
 		game.reset(0);
 	}
@@ -2350,7 +2344,9 @@ document.addEventListener('click', handleClick);
 document.addEventListener('keydown', handleKey);
 
 canvas.addEventListener('mousemove', function (e) {
-	if (document.pointerLockElement === canvas) {
+  if (game.tether.lastInteraction === 'touch' && document.pointerLockElement) 
+    document.exitPointerLock();
+	else if (document.pointerLockElement === canvas) {
 		if (game.tether.locked) game.tether.locked = false;
 
 		game.lastMousePosition.x += e.movementX;
@@ -2389,10 +2385,34 @@ function animate() {
 	requestFrame(animate);
 	if(!paused) {
 		game.step();
-		if(pauseDelay !== 0) pauseDelay = 0;
+		if (pauseDelay !== 0) {
+      pauseDelay = 0;
+      if (canvas.requestPointerLock) canvas.requestPointerLock();
+      game.player.teleportTo({
+		    x: game.lastMousePosition.x + 50,
+		    y: game.lastMousePosition.y + 50
+	    });
+    }
 	} else if (paused && pauseDelay !== 2) {
 		game.step();
 		pauseDelay++;
+    if (pauseDelay === 2) {
+      if (document.pointerLockElement) document.exitPointerLock();
+
+      var fontSize = Math.min(width / 5, height / 8);
+
+      draw({
+			  type: 'text',
+			  text: 
+          {touch: 'tap', mouse: 'click'}[game.tether.lastInteraction] + ' to unpause',
+			  fillStyle: "#000",
+			  fontSize: fontSize,
+			  textPosition: {
+			  	x: width / 2,
+			  	y: height / 2 - fontSize / 2,
+			  },
+		  });
+    }
 	}
 }
 
