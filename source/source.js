@@ -2372,7 +2372,9 @@ function handleClick(e) {
 }
 
 function handleKey(e) {
-	if (e.code === 'KeyP') paused = !paused;
+	if (self.started && !self.ended) {
+		if (e.code === 'KeyP') paused = !paused;
+	}
 }
 
 document.addEventListener('click', handleClick);
@@ -2428,7 +2430,7 @@ function animate() {
 				y: game.lastMousePosition.y + 50,
 			});
 		}
-	} else if (paused && pauseDelay !== 2) {
+	} else if (paused && pauseDelay !== 1) {
 		game.step();
 		game.drawPauseMessage();
 		if (document.pointerLockElement) document.exitPointerLock();
