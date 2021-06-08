@@ -20,6 +20,7 @@ var DEBUG = window.location.hash === '#DEBUG',
 	lastDayCookieKey = 'tetherLastDate',
 	streakCountCookieKey = 'tetherStreakCount',
 	streakCount = localStorage.getItem(streakCountCookieKey) ?? 0,
+	subtitleText = "",
 	lastDate = new Date(Number(localStorage.getItem(lastDayCookieKey))),
 	lastTouchStart,
 	uidCookieKey = 'tetherId',
@@ -29,6 +30,9 @@ var DEBUG = window.location.hash === '#DEBUG',
 	paused = false,
 	shouldUnmuteImmediately = false,
 	cookieExpiryDate = new Date();
+
+if(window.location.pathname === '/source/') subtitleText = 'Source Development Mode. #OpenSource';
+else subtitleText = 'Swing around a ball and cause pure destruction.';
 
 cookieExpiryDate.setFullYear(cookieExpiryDate.getFullYear() + 50);
 var cookieSuffix = '; expires=' + cookieExpiryDate.toUTCString();
@@ -541,8 +545,8 @@ function Music() {
 	var self = this,
 		path;
 
-	if (INFO) path = 'bgm.mp3';
-	else path = 'bgm.mp3';
+	if (INFO) path = '../tether_theme.mp3';
+	else path = '../tether_theme.mp3';
 
 	self.element = new Audio(path);
 
@@ -563,7 +567,7 @@ function Music() {
 
 Music.prototype = {
 	bpm: 90,
-	url: 'bgm.mp3',
+	url: 'tether_theme.mp3',
 	delayCompensation: 0.03,
 
 	totalBeat: function () {
@@ -1911,7 +1915,7 @@ function Game() {
 
 		draw({
 			type: 'text',
-			text: 'Swing around a ball and cause pure destruction.',
+			text: subtitleText ?? 'Swing around a ball and cause pure destruction.',
 			fillStyle: rgbWithOpacity([0, 0, 0], opacity),
 			fontSize: 30,
 			textPosition: {
@@ -2371,7 +2375,21 @@ function handleClick(e) {
 	}
 }
 
+var konamiLength = 0;
+var konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA', 'Space'];
+
+function konamiSeq(requiredKey, givenKey) {
+	if(requiredKey === givenKey) konamiLength++;
+	else konamiLength = 0;
+	
+	if(konamiLength === 11) {
+		subtitleText = 'Special Cheats Activated. Have fun!';
+		playerRGB = 'Rainbow';
+	}
+}
+
 function handleKey(e) {
+	konamiSeq(konamiSequence[konamiLength], e.code);
 	if (e.code === 'KeyP') paused = !paused;
 }
 

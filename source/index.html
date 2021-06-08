@@ -142,7 +142,7 @@
     <link href="../icons/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png" />
 
     <meta content="#ffffff" name="msapplication-TileColor" />
-    <meta content="icons/ms-icon-144x144.png" name="msapplication-TileImage" />
+    <meta content="../icons/ms-icon-144x144.png" name="msapplication-TileImage" />
     <meta content="#ffffff" name="theme-color" />
 
     <link href="../manifest.json" rel="manifest" />
@@ -168,8 +168,20 @@
             });
         })();
     </script>
+    <script>
+			if ('serviceWorker' in navigator) {
+				window.addEventListener('load', async () => {
+					try {
+						const reg = await navigator.serviceWorker.register('service-worker.js');
+						console.log('Service worker registered! 😎', reg);
+					} catch (err) {
+						console.log('😥 Service worker registration failed: ', err);
+					}
+				});
+			}
+    </script>
     <body>
         <noscript>Hey there, this game needs Javascript. Turn it on to experience the excitement!</noscript><canvas id="game"></canvas>
-        <script src="source.js"></script>
+        <script src="game.js"></script>
     </body>
 </html>
