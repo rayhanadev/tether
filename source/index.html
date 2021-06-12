@@ -168,18 +168,6 @@
             });
         })();
     </script>
-    <script>
-			if ('serviceWorker' in navigator) {
-				window.addEventListener('load', async () => {
-					try {
-						const reg = await navigator.serviceWorker.register('service-worker.js');
-						console.log('Service worker registered! 😎', reg);
-					} catch (err) {
-						console.log('😥 Service worker registration failed: ', err);
-					}
-				});
-			}
-    </script>
     <body>
         <noscript>Hey there, this game needs Javascript. Turn it on to experience the excitement!</noscript><canvas id="game"></canvas>
         <script src="game.js"></script>

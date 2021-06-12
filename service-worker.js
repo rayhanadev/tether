@@ -1,11 +1,11 @@
-const cacheName = 'tether_cache_v1';
+const cacheName = 'tether_cache-v2';
 const precacheResources = [
-	'/', 
-	'/offline.html', 
-	'/fonts/Quantico400.woff2', 
-	'/fonts/Quantico700.woff2', 
-	'/fonts/Tulpen-One400.woff2', 
-	'/favicon.ico',
+	'/',
+	'/fonts/Quantico400.woff2',
+	'/fonts/Quantico700.woff2',
+	'/fonts/Tulpen-One400.woff2',
+	'/icons/favicon-16x16.png',
+	'/tether_theme.mp3',
 	'/libs/font-awesome.min.css',
 	'/libs/fontawesome-webfont.woff'
 ];
