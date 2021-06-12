@@ -34,9 +34,9 @@ var DEBUG = window.location.hash === '#DEBUG',
 if(window.location.pathname === '/source/') subtitleText = 'Source Development Mode. #OpenSource';
 else subtitleText = 'Swing around a ball and cause pure destruction.';
 
-setInterval(function() {
-	if(!navigator.onLine) subtitleText = 'Offline Mode.';
-}, 60000);
+window.addEventListener('offline', () => {
+	window.location.href = '/offline/';
+});
 
 cookieExpiryDate.setFullYear(cookieExpiryDate.getFullYear() + 50);
 var cookieSuffix = '; expires=' + cookieExpiryDate.toUTCString();
