@@ -1,5 +1,21 @@
 document.body.classList.add('game');
 
+var storage = (function() {
+	var uid = new Date;
+	var storage;
+	var result;
+	try {
+		(storage = window.localStorage).setItem(uid, uid);
+		result = storage.getItem(uid) == uid;
+		storage.removeItem(uid);
+		return result && storage;
+	} catch (exception) {}
+	storage = function() { console.log('localStorage Disabled.') };
+	storage.getItem = function() { console.log('localStorage Disabled.') };
+	storage.setItem = function() { console.log('localStorage Disabled.') };
+	return storage;
+}());
+
 var DEBUG = window.location.hash === '#DEBUG',
 	INFO = DEBUG || window.location.hash === '#INFO',
 	game,
@@ -15,13 +31,13 @@ var DEBUG = window.location.hash === '#DEBUG',
 	playButtonProximityThreshold = 30,
 	maximumPossibleDistanceBetweenTwoMasses,
 	highScoreCookieKey = 'tetherHighScore',
-	highScore = localStorage.getItem(highScoreCookieKey) ?? 0,
+	highScore = storage.getItem(highScoreCookieKey) ?? 0,
 	musicMutedCookieKey = 'tetherMusicMuted',
 	lastDayCookieKey = 'tetherLastDate',
 	streakCountCookieKey = 'tetherStreakCount',
-	streakCount = localStorage.getItem(streakCountCookieKey) ?? 0,
+	streakCount = storage.getItem(streakCountCookieKey) ?? 0,
 	subtitleText = "",
-	lastDate = new Date(Number(localStorage.getItem(lastDayCookieKey))),
+	lastDate = new Date(Number(storage.getItem(lastDayCookieKey))),
 	lastTouchStart,
 	uidCookieKey = 'tetherId',
 	uid,
@@ -399,10 +415,10 @@ function initCanvas() {
 	var later48Hours = lastDate.getTime() + 2 * 86400000;
 	var currentDate = new Date();
 
-	var streak = Number(localStorage.getItem(streakCountCookieKey));
+	var streak = Number(storage.getItem(streakCountCookieKey));
 
 	if (
-		!Number(localStorage.getItem(lastDayCookieKey)) ||
+		!Number(storage.getItem(lastDayCookieKey)) ||
 		Number.isNaN(lastDate)
 	) {
 		saveCookie(lastDayCookieKey, currentDate.getTime());
@@ -473,8 +489,8 @@ function initCanvas() {
 	document.exitPointerLock =
 		document.exitPointerLock || document.mozExitPointerLock;
 
-	for (var key in localStorage) {
-		var value = localStorage.getItem(key);
+	for (var key in storage) {
+		var value = storage.getItem(key);
 		if (
 			achievements[key] ||
 			key === musicMutedCookieKey ||
@@ -1565,7 +1581,7 @@ function autoWave(difficulty) {
 }
 
 function saveCookie(key, value) {
-	localStorage.setItem(key, value);
+	storage.setItem(key, value);
 	document.cookie = key + '=' + value + cookieSuffix;
 }
 
