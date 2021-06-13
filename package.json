@@ -4,7 +4,7 @@
   "description": "A game about swinging a ball around and sheer destruction.",
   "main": ".",
   "scripts": {
-    "serve": "serve"
+    "build": "npx serve"
   },
   "repository": {
     "type": "git",
