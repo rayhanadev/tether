@@ -1,6 +1,8 @@
 const cacheName = 'tether_cache-v2';
 const precacheResources = [
+	'/',
 	'/offline/',
+	'/404.html',
 	'/fonts/Quantico400.woff2',
 	'/fonts/Quantico700.woff2',
 	'/fonts/Tulpen-One400.woff2',
