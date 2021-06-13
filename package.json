@@ -1,0 +1,20 @@
+{
+  "name": "tether",
+  "version": "1.0.0",
+  "description": "A game about swinging a ball around and sheer destruction.",
+  "main": ".",
+  "scripts": {
+    "serve": "serve"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RayhanADev/tether.git"
+  },
+  "keywords": [],
+  "author": "RayhanADev",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/RayhanADev/tether/issues"
+  },
+  "homepage": "https://github.com/RayhanADev/tether#readme"
+}
