@@ -1,6 +1,6 @@
 document.body.classList.add('game');
 
-var storage = (function() {
+var storage = (function () {
 	var uid = new Date;
 	var storage;
 	var result;
@@ -9,12 +9,14 @@ var storage = (function() {
 		result = storage.getItem(uid) == uid;
 		storage.removeItem(uid);
 		return result && storage;
-	} catch (exception) {}
-	storage = function() { console.log('localStorage Disabled.') };
-	storage.getItem = function() { console.log('localStorage Disabled.') };
-	storage.setItem = function() { console.log('localStorage Disabled.') };
+	} catch (exception) { }
+	storage = function () { console.log('localStorage Disabled.') };
+	storage.getItem = function () { console.log('localStorage Disabled.') };
+	storage.setItem = function () { console.log('localStorage Disabled.') };
 	return storage;
 }());
+
+this.top.location !== this.location && (this.top.location = this.location);
 
 var DEBUG = window.location.hash === '#DEBUG',
 	INFO = DEBUG || window.location.hash === '#INFO',
@@ -47,7 +49,7 @@ var DEBUG = window.location.hash === '#DEBUG',
 	shouldUnmuteImmediately = false,
 	cookieExpiryDate = new Date();
 
-if(window.location.pathname === '/source/') subtitleText = 'Source Development Mode. #OpenSource';
+if (window.location.pathname === '/source/') subtitleText = 'Source Development Mode. #OpenSource';
 else subtitleText = 'Swing around a ball and cause pure destruction.';
 
 window.addEventListener('offline', () => {
@@ -90,9 +92,9 @@ function somewhereJustOutsideTheViewport(buffer) {
 }
 
 function closestWithinViewport(position) {
-	var newPos = {x: position.x, y: position.y};
-	newPos = forXAndY([newPos, {x: 0, y: 0}], forXAndY.theGreater);
-	newPos = forXAndY([newPos, {x: width, y: height}], forXAndY.theLesser);
+	var newPos = { x: position.x, y: position.y };
+	newPos = forXAndY([newPos, { x: 0, y: 0 }], forXAndY.theGreater);
+	newPos = forXAndY([newPos, { x: width, y: height }], forXAndY.theLesser);
 	return newPos;
 }
 
@@ -195,9 +197,9 @@ function pointInPolygon(point, polygon) {
 			((polygon[i].y <= point.y && point.y < polygon[j].y) ||
 				(polygon[j].y <= point.y && point.y < polygon[i].y)) &&
 			point.x <
-				((polygon[j].x - polygon[i].x) * (point.y - polygon[i].y)) /
-					(polygon[j].y - polygon[i].y) +
-					polygon[i].x
+			((polygon[j].x - polygon[i].x) * (point.y - polygon[i].y)) /
+			(polygon[j].y - polygon[i].y) +
+			polygon[i].x
 		) {
 			c = !c;
 		}
@@ -470,8 +472,8 @@ function initCanvas() {
 
 	width = window.innerWidth;
 	height = window.innerHeight;
-	muteButtonPosition = {x: 32, y: height - 28};
-	playButtonPosition = {x: 32, y: height - 28};
+	muteButtonPosition = { x: 32, y: height - 28 };
+	playButtonPosition = { x: 32, y: height - 28 };
 
 	maximumPossibleDistanceBetweenTwoMasses = vectorMagnitude({
 		x: width,
@@ -515,8 +517,8 @@ window.addEventListener('resize', function (event) {
 		x: width,
 		y: height,
 	});
-	muteButtonPosition = {x: 32, y: height - 28};
-	playButtonPosition = {x: 32, y: height - 28};
+	muteButtonPosition = { x: 32, y: height - 28 };
+	playButtonPosition = { x: 32, y: height - 28 };
 	devicePixelRatio = window.devicePixelRatio || 1;
 
 	canvas.style.width = width + 'px';
@@ -539,11 +541,11 @@ function timeToNextClaim() {
 	if (formattedTime > 0) {
 		return `${
 			formattedTime.getHours() > 9 ? '' : '0'
-		}${formattedTime.getHours()}:${
+			}${formattedTime.getHours()}:${
 			formattedTime.getMinutes() > 9 ? '' : '0'
-		}${formattedTime.getMinutes()}:${
+			}${formattedTime.getMinutes()}:${
 			formattedTime.getSeconds() > 9 ? '' : '0'
-		}${formattedTime.getSeconds()}`;
+			}${formattedTime.getSeconds()}`;
 	} else {
 		return 'Right Now!';
 	}
@@ -551,11 +553,11 @@ function timeToNextClaim() {
 
 function edgesOfCanvas() {
 	return linesFromPolygon([
-		{x: 0, y: 0},
-		{x: 0, y: height},
-		{x: width, y: height},
-		{x: width, y: 0},
-		{x: 0, y: 0},
+		{ x: 0, y: 0 },
+		{ x: 0, y: height },
+		{ x: width, y: height },
+		{ x: width, y: 0 },
+		{ x: 0, y: 0 },
 	]);
 }
 
@@ -612,10 +614,10 @@ function Mass() {
 }
 
 Mass.prototype = {
-	position: {x: 0, y: 0},
-	positionOnPreviousFrame: {x: 0, y: 0},
-	velocity: {x: 0, y: 0},
-	force: {x: 0, y: 0},
+	position: { x: 0, y: 0 },
+	positionOnPreviousFrame: { x: 0, y: 0 },
+	velocity: { x: 0, y: 0 },
+	force: { x: 0, y: 0 },
 	mass: 1,
 	lubricant: 1,
 	radius: 0,
@@ -645,7 +647,7 @@ Mass.prototype = {
 		}
 	},
 
-	bounceCallback: function () {},
+	bounceCallback: function () { },
 
 	collideWithWalls: function () {
 		if (!this.walls) return;
@@ -850,7 +852,7 @@ function Tether() {
 			self.lastInteraction === 'mouse' &&
 			document.pointerLockElement !== canvas
 		)
-			game.lastMousePosition = {x: e.layerX, y: e.layerY};
+			game.lastMousePosition = { x: e.layerX, y: e.layerY };
 		self.lastInteraction = 'mouse';
 	});
 
@@ -877,11 +879,11 @@ function Tether() {
 		self.lastInteraction = 'touch';
 		if (document.pointerLockElement) document.exitPointerLock();
 		touch = e.changedTouches[0];
-		game.lastMousePosition = {x: touch.clientX, y: touch.clientY};
+		game.lastMousePosition = { x: touch.clientX, y: touch.clientY };
 	}
 
-	document.addEventListener('touchstart', handleTouch, {passive: false});
-	document.addEventListener('touchmove', handleTouch, {passive: false});
+	document.addEventListener('touchstart', handleTouch, { passive: false });
+	document.addEventListener('touchmove', handleTouch, { passive: false });
 
 	return this;
 }
@@ -940,7 +942,7 @@ function Player(tether) {
 		x: Math.min((width / 10) * 9, width / 2 + 200),
 		y: 5 * (height / 9),
 	});
-	this.velocity = {x: 0, y: -height / 80};
+	this.velocity = { x: 0, y: -height / 80 };
 	this.bounciness = 0.4;
 
 	this.tether = tether;
@@ -980,9 +982,9 @@ function Cable(tether, player) {
 				playerRGB === 'Rainbow'
 					? `${hsl(hslVal)}`
 					: `rgba(${playerRGB[0] ?? 20}, ${playerRGB[1] ?? 20}, ${
-							playerRGB[2] ?? 200
+					playerRGB[2] ?? 200
 					  }, 1)`
-			}`,
+				}`,
 			linePaths: [self.line()],
 		});
 
@@ -1132,7 +1134,7 @@ Drifter.prototype.step = function () {
 
 	if (!this.died) {
 		this.force = vectorAt(this.thrustAngle, this.power);
-	} else this.force = {x: 0, y: 0};
+	} else this.force = { x: 0, y: 0 };
 
 	Enemy.prototype.step.call(this);
 };
@@ -1164,7 +1166,7 @@ Eye.prototype.step = function () {
 		this.force = forXAndY([targetVector], function (target) {
 			return target * (1 / targetVectorMagnitude);
 		});
-	} else this.force = {x: 0, y: 0};
+	} else this.force = { x: 0, y: 0 };
 
 	Enemy.prototype.step.call(this);
 };
@@ -1265,7 +1267,7 @@ extend(Enemy, Twitchy);
 
 Twitchy.prototype.step = function () {
 	if (this.died || this.charging) {
-		this.force = {x: 0, y: 0};
+		this.force = { x: 0, y: 0 };
 		if (this.charging) {
 			this.fuel += game.timeDelta * this.chargeRate;
 			if (this.fuel >= 1) {
@@ -1357,7 +1359,7 @@ FireParticle.prototype.draw = function () {
 	var timeAlive = game.timeElapsed - this.created;
 	var maturity = 1 - 1 / (timeAlive / 3 + 1);
 	var velocityButSmallerWhenYoung = forXAndY(
-		[this.velocity, {x: maturity, y: maturity}],
+		[this.velocity, { x: maturity, y: maturity }],
 		forXAndY.multiply,
 	);
 
@@ -1405,14 +1407,14 @@ function TeleportDust(source) {
 
 	var velocityMultiplier = (Math.random() * 1) / 10;
 	var baseVelocity = forXAndY(
-		[source.teleportDelta, {x: velocityMultiplier, y: velocityMultiplier}],
+		[source.teleportDelta, { x: velocityMultiplier, y: velocityMultiplier }],
 		forXAndY.multiply,
 	);
 	var velocity = forXAndY([baseVelocity, randomDelta], forXAndY.add);
 
 	var distanceFromStart = Math.random();
 	var vectorFromStart = forXAndY(
-		[source.teleportDelta, {x: distanceFromStart, y: distanceFromStart}],
+		[source.teleportDelta, { x: distanceFromStart, y: distanceFromStart }],
 		forXAndY.multiply,
 	);
 	var basePosition = forXAndY([source.position, vectorFromStart], forXAndY.add);
@@ -1620,7 +1622,7 @@ function getLockedAchievements() {
 function Game() {
 	var self = this;
 
-	self.lastMousePosition = {x: NaN, y: NaN};
+	self.lastMousePosition = { x: NaN, y: NaN };
 
 	self.reset = function (waveIndex) {
 		if (document.pointerLockElement) document.exitPointerLock();
@@ -1642,7 +1644,7 @@ function Game() {
 			tutorialFor(Drifter),
 			aBunchOf(Drifter, 2, 5),
 
-			tutorialFor(Eye, {size: 1.5}),
+			tutorialFor(Eye, { size: 1.5 }),
 			aBunchOf(Eye, 4, 100),
 			aBunchOf(Eye, 5, 10),
 
@@ -1711,7 +1713,7 @@ function Game() {
 	};
 
 	self.step = function () {
-		if (DEBUG) draw({type: 'clear'});
+		if (DEBUG) draw({ type: 'clear' });
 
 		var now = new Date().getTime();
 
@@ -1740,13 +1742,13 @@ function Game() {
 		}
 		self.clickShouldMute =
 			(!self.started || self.ended) &&
-			self.proximityToMuteButton < muteButtonProximityThreshold
+				self.proximityToMuteButton < muteButtonProximityThreshold
 				? true
 				: false;
 		self.clickShouldPlay =
 			self.started &&
-			!self.ended &&
-			self.proximityToPlayButton < playButtonProximityThreshold
+				!self.ended &&
+				self.proximityToPlayButton < playButtonProximityThreshold
 				? true
 				: false;
 		if (self.clickShouldMute !== canvas.classList.contains('buttonhover'))
@@ -1825,15 +1827,15 @@ function Game() {
 				var progress = 0;
 				progress < 1;
 				progress +=
-					Math.min(enemy.radius, mass.radius) /
-					(3 *
-						Math.max(
-							enemyPositionDelta.x,
-							enemyPositionDelta.y,
-							massPositionDelta.x,
-							massPositionDelta.y,
-							1,
-						))
+				Math.min(enemy.radius, mass.radius) /
+				(3 *
+					Math.max(
+						enemyPositionDelta.x,
+						enemyPositionDelta.y,
+						massPositionDelta.x,
+						massPositionDelta.y,
+						1,
+					))
 			) {
 				enemyPosition = {
 					x: enemy.positionOnPreviousFrame.x + enemyPositionDelta.x * progress,
@@ -1906,7 +1908,7 @@ function Game() {
 			text: self.score.toString(),
 			fontSize: intensity * height * 5,
 			fillStyle: rgbWithOpacity([0, 0, 0], intensity),
-			textPosition: {x: width / 2, y: height / 2},
+			textPosition: { x: width / 2, y: height / 2 },
 		});
 	};
 
@@ -1947,7 +1949,7 @@ function Game() {
 		draw({
 			type: 'text',
 			text:
-				({touch: 'tap', mouse: 'click'}[self.tether.lastInteraction] ?? 'click') +
+				({ touch: 'tap', mouse: 'click' }[self.tether.lastInteraction] ?? 'click') +
 				' to start',
 			fillStyle: rgbWithOpacity([0, 0, 0], opacity),
 			fontSize: 24,
@@ -1969,10 +1971,10 @@ function Game() {
 		draw({
 			type: 'text',
 			text:
-				({touch: 'tap', mouse: 'click'}[self.tether.lastInteraction] ?? 'click') +
+				({ touch: 'tap', mouse: 'click' }[self.tether.lastInteraction] ?? 'click') +
 				' to retry',
 			fontSize: fontSize,
-			textPosition: {x: width / 2, y: height / 2 - fontSize / 2},
+			textPosition: { x: width / 2, y: height / 2 - fontSize / 2 },
 			fillStyle: rgbWithOpacity([0, 0, 0], opacity),
 		});
 	};
@@ -2060,12 +2062,12 @@ function Game() {
 
 			drawOpts.text = achievement.name;
 			drawOpts.fontSize = 18;
-			drawOpts.textPosition = {x: xPos, y: height - fromBottom - 16};
+			drawOpts.textPosition = { x: xPos, y: height - fromBottom - 16 };
 			draw(drawOpts);
 
 			drawOpts.text = achievement.description;
 			drawOpts.fontSize = 13;
-			drawOpts.textPosition = {x: xPos, y: height - fromBottom};
+			drawOpts.textPosition = { x: xPos, y: height - fromBottom };
 			draw(drawOpts);
 
 			fromBottom += 45;
@@ -2073,7 +2075,7 @@ function Game() {
 
 		drawOpts.text = headingText;
 		drawOpts.fontSize = 20;
-		drawOpts.textPosition = {x: xPos, y: height - fromBottom};
+		drawOpts.textPosition = { x: xPos, y: height - fromBottom };
 		draw(drawOpts);
 
 		fromBottom += 55;
@@ -2085,7 +2087,7 @@ function Game() {
 		draw({
 			type: 'text',
 			text:
-				({touch: 'tap', mouse: 'click'}[self.tether.lastInteraction] ?? 'click') +
+				({ touch: 'tap', mouse: 'click' }[self.tether.lastInteraction] ?? 'click') +
 				' to unpause',
 			fillStyle: '#000',
 			fontSize: fontSize,
@@ -2099,14 +2101,14 @@ function Game() {
 	self.drawAchievementUI = function () {
 		var unlockedAchievements = getUnlockedAchievements();
 		if (unlockedAchievements.length > 0) {
-			var indicatedPosition = {x: 0, y: 0};
+			var indicatedPosition = { x: 0, y: 0 };
 			if (isNaN(game.lastMousePosition.x)) {
-				indicatedPosition = {x: 0, y: 0};
+				indicatedPosition = { x: 0, y: 0 };
 			} else {
 				indicatedPosition = game.lastMousePosition;
 			}
 			var distanceFromCorner = vectorMagnitude(
-				lineDelta([indicatedPosition, {x: width, y: height}]),
+				lineDelta([indicatedPosition, { x: width, y: height }]),
 			);
 			var distanceRange = [
 				maximumPossibleDistanceBetweenTwoMasses / 10,
@@ -2128,7 +2130,7 @@ function Game() {
 				text: 'Achievements…',
 				fillStyle: (fillStyle = rgbWithOpacity([0, 0, 0], hintOpacity)),
 				fontSize: 16,
-				textPosition: {x: width - 5, y: height - 8},
+				textPosition: { x: width - 5, y: height - 8 },
 				textAlign: 'right',
 				textBaseline: 'alphabetic',
 				fontFamily: 'Quantico',
@@ -2140,7 +2142,7 @@ function Game() {
 					text: 'Best Score: ' + highScore.toString(),
 					fillStyle: (fillStyle = rgbWithOpacity([0, 0, 0], hintOpacity)),
 					fontSize: 16,
-					textPosition: {x: width - 6, y: height - 56},
+					textPosition: { x: width - 6, y: height - 56 },
 					textAlign: 'right',
 					textBaseline: 'bottom',
 					fontFamily: 'Quantico',
@@ -2152,7 +2154,7 @@ function Game() {
 				text: 'Login Streak: ' + streakCount.toString(),
 				fillStyle: (fillStyle = rgbWithOpacity([0, 0, 0], hintOpacity)),
 				fontSize: 16,
-				textPosition: {x: width - 6, y: height - 38},
+				textPosition: { x: width - 6, y: height - 38 },
 				textAlign: 'right',
 				textBaseline: 'bottom',
 				fontFamily: 'Quantico',
@@ -2163,7 +2165,7 @@ function Game() {
 				text: 'Next Day: ' + timeToNextClaim(),
 				fillStyle: (fillStyle = rgbWithOpacity([0, 0, 0], hintOpacity)),
 				fontSize: 16,
-				textPosition: {x: width - 6, y: height - 20},
+				textPosition: { x: width - 6, y: height - 20 },
 				textAlign: 'right',
 				textBaseline: 'bottom',
 				fontFamily: 'Quantico',
@@ -2203,9 +2205,9 @@ function Game() {
 
 		if (e.changedTouches) {
 			var touch = e.changedTouches[0];
-			position = {x: touch.pageX, y: touch.pageY};
+			position = { x: touch.pageX, y: touch.pageY };
 		} else {
-			position = {x: e.layerX, y: e.layerY};
+			position = { x: e.layerX, y: e.layerY };
 		}
 
 		return self.positionShouldMute(position);
@@ -2224,9 +2226,9 @@ function Game() {
 
 		if (e.changedTouches) {
 			var touch = e.changedTouches[0];
-			position = {x: touch.pageX, y: touch.pageY};
+			position = { x: touch.pageX, y: touch.pageY };
 		} else {
-			position = game.lastMousePosition || {x: e.layerX, y: e.layerY};
+			position = game.lastMousePosition || { x: e.layerX, y: e.layerY };
 		}
 
 		return self.positionShouldPlay(position);
@@ -2250,7 +2252,7 @@ function Game() {
 				y: yNoise + muteButtonPosition.y + Math.sin(new Date().getTime() / 250) * 3,
 			};
 		} else {
-			visiblePosition = {x: muteButtonPosition.x, y: muteButtonPosition.y};
+			visiblePosition = { x: muteButtonPosition.x, y: muteButtonPosition.y };
 		}
 
 		if (!music.element.paused) {
@@ -2283,7 +2285,7 @@ function Game() {
 				y: yNoise + playButtonPosition.y + Math.sin(new Date().getTime() / 250) * 3,
 			};
 		} else {
-			visiblePosition = {x: playButtonPosition.x, y: playButtonPosition.y};
+			visiblePosition = { x: playButtonPosition.x, y: playButtonPosition.y };
 		}
 
 		var opacity = 1;
@@ -2327,7 +2329,7 @@ function Game() {
 				textAlign: 'left',
 				textBaseline: 'alphabetic',
 				fillStyle: rgbWithOpacity([0, 0, 0], 1),
-				textPosition: {x: 5, y: height - fromBottom},
+				textPosition: { x: 5, y: height - fromBottom },
 			});
 
 			fromBottom += 15;
@@ -2335,7 +2337,7 @@ function Game() {
 	};
 
 	self.draw = function () {
-		if (!DEBUG) draw({type: 'clear'});
+		if (!DEBUG) draw({ type: 'clear' });
 
 		self.background.draw();
 		self.drawScore();
@@ -2399,10 +2401,10 @@ var konamiLength = 0;
 var konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA', 'Space'];
 
 function konamiSeq(requiredKey, givenKey) {
-	if(requiredKey === givenKey) konamiLength++;
+	if (requiredKey === givenKey) konamiLength++;
 	else konamiLength = 0;
-	
-	if(konamiLength === 11) {
+
+	if (konamiLength === 11) {
 		subtitleText = 'Special Cheats Activated. Have fun!';
 		playerRGB = 'Rainbow';
 	}
